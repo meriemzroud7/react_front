@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { FiMenu, FiMoon, FiSun, FiX } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/navbar.css';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <nav className="nav">
       <div className="container nav__inner">
         <Link to="/" className="nav__brand">
-          <img 
-                 src="/logof.png" 
-                 alt="Fursa Logo" 
-                 className="nav__brand-icon"
-             />
+          <img
+            src="/logof.png"
+            alt="Fursa Logo"
+            className="nav__brand-icon"
+          />
           <span className="nav__brand-arabic">فرصة</span>
           <span className="nav__brand-name">Fursa</span>
         </Link>
@@ -29,9 +31,14 @@ export default function Navbar() {
           </div>
         </div>
 
-        <button className="nav__burger" onClick={() => setIsOpen(!isOpen)}>
-          {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-        </button>
+        <div className="nav__actions">
+          <button className="nav__theme" onClick={toggleTheme} aria-label="Basculer le thème">
+            {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
+          </button>
+          <button className="nav__burger" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
+        </div>
       </div>
 
       {isOpen && (
