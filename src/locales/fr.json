@@ -1,0 +1,13 @@
+{
+  "app": {
+    "name": "Fursa",
+    "tagline": "فرصتك تبدأ هنا"
+  },
+  "nav": {
+    "features": "Fonctionnalités",
+    "jobs": "Offres",
+    "testimonials": "Témoignages",
+    "login": "Connexion",
+    "register": "Créer un compte"
+  }
+}

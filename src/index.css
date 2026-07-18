@@ -1,0 +1,98 @@
+:root {
+  /* Brand palette (matches the Fursa recruiter dashboard) */
+  --background: #f7f9fb;
+  --foreground: #1b2b3f;
+  --card: #ffffff;
+
+  --primary: #1c4487;
+  --primary-dark: #12305f;
+  --primary-light: #eaf0fa;
+
+  --accent: #eaa927;
+  --accent-dark: #c98d16;
+
+  --muted: #5b6b80;
+  --muted-light: #97a3b3;
+
+  --border: #dde4ec;
+  --border-light: #eef2f7;
+
+  --success: #1a9c6b;
+  --danger: #e0453b;
+
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --shadow: 0 10px 30px rgba(20, 40, 80, 0.08);
+
+  --font: 'Poppins', 'Segoe UI', sans-serif;
+  --font-arabic: 'Noto Sans Arabic', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* Shared entrance animation used across the public pages */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pingPulse {
+  0% { transform: scale(1); opacity: 0.75; }
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease both;
+}
