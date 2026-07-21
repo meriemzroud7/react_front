@@ -23,6 +23,8 @@ import Calendrier from '../pages/recruteur/Calendrier';
 import Messagerie from '../pages/recruteur/Messagerie';
 import Rapports from '../pages/recruteur/Rapports';
 import Parametres from '../pages/recruteur/Parametres';
+import ForgotPassword from '../pages/ForgotPassword';
+import ResetPassword from '../pages/ResetPassword';
 
 function AppRoutes() {
   return (
@@ -37,6 +39,8 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify" element={<CodeVerification />} />
+         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* ── Espace Recruteur ── */}
@@ -54,6 +58,7 @@ function AppRoutes() {
         <Route path="messagerie" element={<Messagerie />} />
         <Route path="rapports" element={<Rapports />} />
         <Route path="parametres" element={<Parametres />} />
+       
       </Route>
 
       {/* ── 404 ── */}

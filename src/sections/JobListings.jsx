@@ -1,5 +1,6 @@
 import { FiMapPin, FiBriefcase, FiDollarSign, FiArrowRight } from 'react-icons/fi';
 import { RiSparklingLine } from 'react-icons/ri';
+import { useTranslation } from 'react-i18next';
 
 const jobs = [
   { title: 'Software Engineer', company: 'Vermeg', location: 'Tunis', salary: '3500 - 5000 TND', match: 94, logo: 'V', color: 'blue' },
@@ -9,16 +10,18 @@ const jobs = [
 ];
 
 export default function JobListings() {
+  const { t } = useTranslation();
+
   return (
     <section id="jobs" className="jobs">
       <div className="container">
         <div className="jobs__header">
           <div>
-            <h2>Recommandations intelligentes</h2>
-            <p>Des opportunités sélectionnées par l'IA selon votre profil.</p>
+            <h2>{t('jobs.title')}</h2>
+            <p>{t('jobs.description')}</p>
           </div>
           <button className="jobs__see-all">
-            Voir toutes les offres <FiArrowRight size={18} />
+            {t('jobs.seeAll')} <FiArrowRight size={18} />
           </button>
         </div>
 
@@ -40,7 +43,7 @@ export default function JobListings() {
                 <div><FiDollarSign size={16} /><span>{job.salary}</span></div>
               </div>
 
-              <button className="jobs__apply">Postuler</button>
+              <button className="jobs__apply">{t('jobs.apply')}</button>
             </div>
           ))}
         </div>

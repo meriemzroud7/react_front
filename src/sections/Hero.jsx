@@ -1,6 +1,9 @@
 import { FiUpload, FiBriefcase, FiFileText, FiCheckCircle } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 export default function Hero() {
+  const { t } = useTranslation();
+
   return (
     <section className="hero">
       <div className="container hero__grid">
@@ -11,7 +14,7 @@ export default function Hero() {
           </div>
 
           <h1 className="hero__title">
-            L'IA au service de votre <span>carrière en Tunisie</span>
+            {t('hero.title')} <span>{t('hero.highlight')}</span>
           </h1>
 
           <div className="hero__divider">
@@ -20,16 +23,15 @@ export default function Hero() {
           </div>
 
           <p className="hero__text">
-            Fursa combine l'intelligence artificielle et une compréhension profonde du marché
-            local pour matcher les talents tunisiens avec les meilleures opportunités.
+            {t('hero.description')}
           </p>
 
           <div className="hero__actions">
             <button className="btn btn--primary">
-              <FiUpload size={20} /> Déposer mon CV
+              <FiUpload size={20} /> {t('hero.uploadCv')}
             </button>
             <button className="btn btn--outline">
-              <FiBriefcase size={20} /> Je recrute
+              <FiBriefcase size={20} /> {t('hero.hire')}
             </button>
           </div>
         </div>
@@ -40,28 +42,28 @@ export default function Hero() {
               <div className="hero__card-title">
                 <div className="hero__card-icon"><FiFileText size={18} /></div>
                 <div>
-                  <h3>Analyse CV en cours</h3>
+                  <h3>{t('hero.cvAnalysisTitle')}</h3>
                   <p>ahmed_cv_2024.pdf</p>
                 </div>
               </div>
-              <span className="hero__card-badge">IA Active</span>
+              <span className="hero__card-badge">{t('hero.aiActive')}</span>
             </div>
 
             <div className="hero__scan">
-              <p>Extraction des compétences...</p>
+              <p>{t('hero.skillExtraction')}</p>
             </div>
 
             <div className="hero__checks">
               <div className="hero__check">
                 <FiCheckCircle size={16} />
-                <span>React, Node.js, TypeScript détectés</span>
+                <span>{t('hero.detectedSkills')}</span>
               </div>
               <div className="hero__check">
                 <FiCheckCircle size={16} />
-                <span>3 ans d'expérience (Sfax, Tunisie)</span>
+                <span>{t('hero.experience')}</span>
               </div>
               <div className="hero__match">
-                <span>Score de match ciblé</span>
+                <span>{t('hero.matchScoreLabel')}</span>
                 <strong>92%</strong>
               </div>
             </div>
@@ -71,7 +73,7 @@ export default function Hero() {
             <div className="hero__floating-avatar hero__floating-avatar--blue">V</div>
             <div>
               <p className="hero__floating-name">Vermeg</p>
-              <p className="hero__floating-sub">Cherche Dev React</p>
+              <p className="hero__floating-sub">{t('hero.jobSearch')}</p>
             </div>
           </div>
 
@@ -79,7 +81,7 @@ export default function Hero() {
             <div className="hero__floating-avatar hero__floating-avatar--gold">T</div>
             <div>
               <p className="hero__floating-name">Telnet</p>
-              <p className="hero__floating-sub">Match trouvé !</p>
+              <p className="hero__floating-sub">{t('hero.matchFound')}</p>
             </div>
           </div>
         </div>

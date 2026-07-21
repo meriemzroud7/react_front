@@ -195,3 +195,52 @@
 .verify__resend button:disabled { color: var(--muted-light); }
 
 .verify__hint { margin-top: 1rem; font-size: 0.75rem; color: var(--muted-light); }
+
+.auth__topbar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth__theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}.auth__brand {
+  position: relative; /* indispensable pour caler l'absolute correctement */
+}
+
+.auth__brand-animation {
+  position: absolute;
+  top: 90px;      /* descendu depuis le haut */
+  right: 40px;    /* légèrement décalé de la marge droite */
+  width: 320px;
+  max-width: 320px;
+  margin: 0;
+  z-index: 3;
+  pointer-events: none;
+  animation: fursaFadeInTop 0.6s ease both;
+}
+
+@keyframes fursaFadeInTop {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .auth__brand-animation {
+    width: 180px;
+    max-width: 180px;
+  }
+}

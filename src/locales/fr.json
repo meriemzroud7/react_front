@@ -9,5 +9,92 @@
     "testimonials": "Témoignages",
     "login": "Connexion",
     "register": "Créer un compte"
+  },
+  "hero": {
+    "title": "L'IA au service de votre",
+    "highlight": "carrière en Tunisie",
+    "description": "Fursa combine l'intelligence artificielle et une compréhension profonde du marché local pour matcher les talents tunisiens avec les meilleures opportunités.",
+    "uploadCv": "Déposer mon CV",
+    "hire": "Je recrute",
+    "cvAnalysisTitle": "Analyse CV en cours",
+    "aiActive": "IA Active",
+    "skillExtraction": "Extraction des compétences...",
+    "detectedSkills": "React, Node.js, TypeScript détectés",
+    "experience": "3 ans d'expérience (Sfax, Tunisie)",
+    "matchScoreLabel": "Score de match ciblé",
+    "jobSearch": "Cherche Dev React",
+    "matchFound": "Match trouvé !"
+  },
+  "features": {
+    "titlePart1": "L'intelligence artificielle,",
+    "titlePart2": "votre atout recrutement",
+    "description": "Notre technologie analyse au-delà des mots-clés pour comprendre la véritable valeur de chaque profil et les besoins spécifiques des entreprises tunisiennes.",
+    "item1Title": "Parsing Intelligent de CV",
+    "item1Text": "L'IA de Fursa lit les CV en français, arabe et anglais. Elle extrait automatiquement les compétences, expériences et formations avec une précision inégalée.",
+    "item2Title": "Matching Sémantique",
+    "item2Text": "Fini les recherches par mots-clés. Notre algorithme comprend le contexte. Un 'Développeur Front-end' matche intelligemment avec une offre 'Ingénieur React'.",
+    "item3Title": "Coach Carrière IA",
+    "item3Text": "Un assistant conversationnel disponible 24/7 pour préparer vos entretiens, améliorer votre CV ou cibler les meilleures offres sur le marché tunisien.",
+    "chatTitle": "Fursa Coach IA",
+    "chatStatus": "En ligne",
+    "chatBotMessage": "Bonjour ! Je vois que vous cherchez un poste de Développeur Full Stack à Sfax. Voulez-vous que je révise votre CV pour les standards actuels ?",
+    "chatUserMessage": "Oui s'il vous plaît. J'ai ajouté mon expérience avec Node.js.",
+    "chatReplyTag": "Excellente initiative.",
+    "chatReply": "J'ai reformulé l'impact de vos projets. Je vous ai aussi trouvé 3 offres chez Digital Mania et Proxym qui correspondent à 90%+ !"
+  },
+  "how": {
+    "title": "Le processus le plus simple",
+    "arabic": "بكل سهولة",
+    "step1Title": "Déposez votre CV",
+    "step1Desc": "Uploadez votre CV en PDF. Notre IA le lit instantanément.",
+    "step2Title": "Analyse sémantique",
+    "step2Desc": "L'IA comprend vos compétences réelles, pas juste des mots.",
+    "step3Title": "Matching précis",
+    "step3Desc": "Recevez les offres qui correspondent exactement à votre profil.",
+    "step4Title": "Entretien ciblé",
+    "step4Desc": "Les recruteurs savent déjà pourquoi vous êtes le bon candidat."
+  },
+  "jobs": {
+    "title": "Recommandations intelligentes",
+    "description": "Des opportunités sélectionnées par l'IA selon votre profil.",
+    "seeAll": "Voir toutes les offres",
+    "apply": "Postuler"
+  },
+  "testimonials": {
+    "title": "Ils ont trouvé leur opportunité",
+    "description": "Rejoignez des milliers de talents qui ont transformé leur carrière."
+  },
+  "cta": {
+    "title": "Prêt à transformer votre recrutement ?",
+    "description": "Que vous cherchiez le job de vos rêves ou le candidat idéal, l'IA de Fursa accélère votre succès en Tunisie.",
+    "primaryButton": "Je crée mon profil",
+    "secondaryButton": "Je suis un recruteur"
+  },
+  "common": {
+    "learnMore": "En savoir plus"
+  },
+  
+
+  "login": {
+    "tagline": "فرصتك تبدأ هنا",
+    "heroTitle1": "L'intelligence",
+    "heroTitle2": "artificielle au service",
+    "heroTitle3": "de votre carrière",
+    "heroDesc": "Rejoignez 85 000+ professionnels tunisiens qui ont trouvé leur opportunité avec Fursa.",
+    "statOffres": "Offres actives",
+    "statTaux": "Taux placement",
+    "statEntreprises": "Entreprises",
+    "welcomeBack": "Bon retour !",
+    "subtitle": "Connectez-vous à votre compte Fursa",
+    "orDivider": "ou",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Votre mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "connecting": "Connexion en cours...",
+    "submit": "Se connecter",
+    "noAccount": "Pas encore de compte ?",
+    "createAccount": "Créer un compte"
   }
 }

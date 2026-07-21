@@ -1,0 +1,100 @@
+{
+  "app": {
+    "name": "Fursa",
+    "tagline": "Your opportunity starts here"
+  },
+  "nav": {
+    "features": "Features",
+    "jobs": "Jobs",
+    "testimonials": "Testimonials",
+    "login": "Login",
+    "register": "Create account"
+  },
+  "hero": {
+    "title": "AI at the service of your",
+    "highlight": "career in Tunisia",
+    "description": "Fursa combines artificial intelligence and a deep understanding of the local market to connect Tunisian talent with the best opportunities.",
+    "uploadCv": "Upload my CV",
+    "hire": "I recruit",
+    "cvAnalysisTitle": "CV analysis in progress",
+    "aiActive": "AI Active",
+    "skillExtraction": "Extracting skills...",
+    "detectedSkills": "React, Node.js, TypeScript detected",
+    "experience": "3 years of experience (Sfax, Tunisia)",
+    "matchScoreLabel": "Target match score",
+    "jobSearch": "Looking for a React Dev",
+    "matchFound": "Match found!"
+  },
+  "features": {
+    "titlePart1": "Artificial intelligence,",
+    "titlePart2": "your recruitment advantage",
+    "description": "Our technology goes beyond keywords to understand the true value of each profile and the specific needs of Tunisian companies.",
+    "item1Title": "Smart CV Parsing",
+    "item1Text": "Fursa AI reads CVs in French, Arabic and English. It automatically extracts skills, experience and education with unmatched precision.",
+    "item2Title": "Semantic Matching",
+    "item2Text": "No more keyword searches. Our algorithm understands context. A 'Front-end Developer' intelligently matches an offer for 'React Engineer'.",
+    "item3Title": "AI Career Coach",
+    "item3Text": "A conversational assistant available 24/7 to prepare for interviews, improve your CV or target the best opportunities in the Tunisian market.",
+    "chatTitle": "Fursa AI Coach",
+    "chatStatus": "Online",
+    "chatBotMessage": "Hello! I can see you are looking for a Full Stack Developer role in Sfax. Would you like me to review your CV for current standards?",
+    "chatUserMessage": "Yes please. I added my Node.js experience.",
+    "chatReplyTag": "Excellent initiative.",
+    "chatReply": "I reformulated the impact of your projects. I also found 3 opportunities at Digital Mania and Proxym that match at 90%+!"
+  },
+  "how": {
+    "title": "The simplest process",
+    "arabic": "With ease",
+    "step1Title": "Upload your CV",
+    "step1Desc": "Upload your CV in PDF. Our AI reads it instantly.",
+    "step2Title": "Semantic analysis",
+    "step2Desc": "The AI understands your real skills, not just words.",
+    "step3Title": "Precise matching",
+    "step3Desc": "Receive offers that match your profile exactly.",
+    "step4Title": "Targeted interview",
+    "step4Desc": "Recruiters already know why you are the right candidate."
+  },
+  "jobs": {
+    "title": "Smart recommendations",
+    "description": "Opportunities selected by AI according to your profile.",
+    "seeAll": "See all jobs",
+    "apply": "Apply"
+  },
+  "testimonials": {
+    "title": "They found their opportunity",
+    "description": "Join thousands of talents who transformed their careers."
+  },
+  "cta": {
+    "title": "Ready to transform your recruitment?",
+    "description": "Whether you are looking for your dream job or the ideal candidate, Fursa AI accelerates your success in Tunisia.",
+    "primaryButton": "Create my profile",
+    "secondaryButton": "I am a recruiter"
+  },
+  "common": {
+    "learnMore": "Learn more"
+  }
+,
+
+  "login": {
+    "tagline": "Your opportunity starts here",
+    "heroTitle1": "Artificial intelligence",
+    "heroTitle2": "at the service",
+    "heroTitle3": "of your career",
+    "heroDesc": "Join 85,000+ Tunisian professionals who found their opportunity with Fursa.",
+    "statOffres": "Active listings",
+    "statTaux": "Placement rate",
+    "statEntreprises": "Companies",
+    "welcomeBack": "Welcome back!",
+    "subtitle": "Sign in to your Fursa account",
+    "orDivider": "or",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Your password",
+    "forgotPassword": "Forgot password?",
+    "connecting": "Signing in...",
+    "submit": "Sign in",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create account"
+  }
+}

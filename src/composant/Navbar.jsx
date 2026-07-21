@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiMenu, FiMoon, FiSun, FiX } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import LanguageSwitcher from './LanguageSwitcher';
 import '../styles/navbar.css';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <nav className="nav">
@@ -22,16 +25,17 @@ export default function Navbar() {
         </Link>
 
         <div className="nav__links">
-          <a href="#features">Fonctionnalités</a>
-          <a href="#jobs">Offres</a>
-          <a href="#testimonials">Témoignages</a>
+          <a href="#features">{t('nav.features')}</a>
+          <a href="#jobs">{t('nav.jobs')}</a>
+          <a href="#testimonials">{t('nav.testimonials')}</a>
           <div className="nav__auth">
-            <Link to="/login" className="nav__login">Connexion</Link>
-            <Link to="/register" className="nav__cta">Créer un compte</Link>
+            <Link to="/login" className="nav__login">{t('nav.login')}</Link>
+            <Link to="/register" className="nav__cta">{t('nav.register')}</Link>
           </div>
         </div>
 
         <div className="nav__actions">
+          <LanguageSwitcher />
           <button className="nav__theme" onClick={toggleTheme} aria-label="Basculer le thème">
             {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
           </button>
@@ -43,12 +47,13 @@ export default function Navbar() {
 
       {isOpen && (
         <div className="nav__mobile">
-          <a href="#features" onClick={() => setIsOpen(false)}>Fonctionnalités</a>
-          <a href="#jobs" onClick={() => setIsOpen(false)}>Offres</a>
-          <a href="#testimonials" onClick={() => setIsOpen(false)}>Témoignages</a>
+          <a href="#features" onClick={() => setIsOpen(false)}>{t('nav.features')}</a>
+          <a href="#jobs" onClick={() => setIsOpen(false)}>{t('nav.jobs')}</a>
+          <a href="#testimonials" onClick={() => setIsOpen(false)}>{t('nav.testimonials')}</a>
           <div className="nav__mobile-auth">
-            <Link to="/login" className="nav__login nav__login--block">Connexion</Link>
-            <Link to="/register" className="nav__cta nav__cta--block">Créer un compte</Link>
+            <LanguageSwitcher />
+            <Link to="/login" className="nav__login nav__login--block">{t('nav.login')}</Link>
+            <Link to="/register" className="nav__cta nav__cta--block">{t('nav.register')}</Link>
           </div>
         </div>
       )}

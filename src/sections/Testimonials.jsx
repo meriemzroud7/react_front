@@ -1,4 +1,5 @@
 import { FiMessageCircle } from 'react-icons/fi';
+import { useTranslation } from 'react-i18next';
 
 const testimonials = [
   { name: 'Yasmine B.', role: 'Ingénieure, Tunis', text: "Je cherchais depuis 6 mois. J'ai uploadé mon CV sur Fursa, l'IA a mis en valeur mon projet de fin d'études que j'avais négligé. Embauchée chez Sofrecom en 2 semaines." },
@@ -7,12 +8,14 @@ const testimonials = [
 ];
 
 export default function Testimonials() {
+  const { t } = useTranslation();
+
   return (
     <section id="testimonials" className="testi">
       <div className="container">
         <div className="testi__intro">
-          <h2>Ils ont trouvé leur opportunité</h2>
-          <p>Rejoignez des milliers de talents qui ont transformé leur carrière.</p>
+          <h2>{t('testimonials.title')}</h2>
+          <p>{t('testimonials.description')}</p>
         </div>
 
         <div className="testi__grid">

@@ -1,18 +1,20 @@
 import { FiZap } from 'react-icons/fi';
 import { RiSparklingLine, RiFocus3Line, RiRobot2Line } from 'react-icons/ri';
+import { useTranslation } from 'react-i18next';
 
 export default function Features() {
+  const { t } = useTranslation();
+
   return (
     <section id="features" className="features">
       <div className="container">
         <div className="features__intro">
           <h2>
-            L'intelligence artificielle, <br />
-            <span>votre atout recrutement</span>
+            {t('features.titlePart1')} <br />
+            <span>{t('features.titlePart2')}</span>
           </h2>
           <p>
-            Notre technologie analyse au-delà des mots-clés pour comprendre la véritable valeur
-            de chaque profil et les besoins spécifiques des entreprises tunisiennes.
+            {t('features.description')}
           </p>
         </div>
 
@@ -21,22 +23,22 @@ export default function Features() {
             <div className="features__item">
               <div className="features__icon features__icon--primary"><RiSparklingLine size={24} /></div>
               <div>
-                <h3>Parsing Intelligent de CV</h3>
-                <p>L'IA de Fursa lit les CV en français, arabe et anglais. Elle extrait automatiquement les compétences, expériences et formations avec une précision inégalée.</p>
+                <h3>{t('features.item1Title')}</h3>
+                <p>{t('features.item1Text')}</p>
               </div>
             </div>
             <div className="features__item">
               <div className="features__icon features__icon--accent"><RiFocus3Line size={24} /></div>
               <div>
-                <h3>Matching Sémantique</h3>
-                <p>Fini les recherches par mots-clés. Notre algorithme comprend le contexte. Un "Développeur Front-end" matche intelligemment avec une offre "Ingénieur React".</p>
+                <h3>{t('features.item2Title')}</h3>
+                <p>{t('features.item2Text')}</p>
               </div>
             </div>
             <div className="features__item">
               <div className="features__icon features__icon--blue"><RiRobot2Line size={24} /></div>
               <div>
-                <h3>Coach Carrière IA</h3>
-                <p>Un assistant conversationnel disponible 24/7 pour préparer vos entretiens, améliorer votre CV ou cibler les meilleures offres sur le marché tunisien.</p>
+                <h3>{t('features.item3Title')}</h3>
+                <p>{t('features.item3Text')}</p>
               </div>
             </div>
           </div>
@@ -45,8 +47,8 @@ export default function Features() {
             <div className="features__chat-header">
               <div className="features__chat-avatar"><RiRobot2Line size={20} /></div>
               <div>
-                <h4>Fursa Coach IA</h4>
-                <p>En ligne</p>
+                <h4>{t('features.chatTitle')}</h4>
+                <p>{t('features.chatStatus')}</p>
               </div>
             </div>
 
@@ -54,20 +56,20 @@ export default function Features() {
               <div className="features__msg">
                 <div className="features__msg-avatar"><RiRobot2Line size={14} /></div>
                 <div className="features__bubble features__bubble--bot">
-                  Bonjour ! Je vois que vous cherchez un poste de Développeur Full Stack à Sfax. Voulez-vous que je révise votre CV pour les standards actuels ?
+                  {t('features.chatBotMessage')}
                 </div>
               </div>
               <div className="features__msg features__msg--user">
                 <div className="features__msg-avatar features__msg-avatar--accent">AM</div>
                 <div className="features__bubble features__bubble--user">
-                  Oui s'il vous plaît. J'ai ajouté mon expérience avec Node.js.
+                  {t('features.chatUserMessage')}
                 </div>
               </div>
               <div className="features__msg">
                 <div className="features__msg-avatar"><RiRobot2Line size={14} /></div>
                 <div className="features__bubble features__bubble--bot">
-                  <span className="features__bubble-tag"><FiZap size={14} /> Excellente initiative.</span>
-                  J'ai reformulé l'impact de vos projets. Je vous ai aussi trouvé 3 offres chez Digital Mania et Proxym qui correspondent à 90%+ !
+                  <span className="features__bubble-tag"><FiZap size={14} /> {t('features.chatReplyTag')}</span>
+                  {t('features.chatReply')}
                 </div>
               </div>
             </div>
