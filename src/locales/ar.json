@@ -96,5 +96,36 @@
     "submit": "تسجيل الدخول",
     "noAccount": "ليس لديك حساب؟",
     "createAccount": "إنشاء حساب"
-  }
+  },
+  "register": {
+  "tagline": "انضم إلى فرصة",
+  "heroTitle1": "مسيرتك المهنية",
+  "heroTitle2": "تبدأ من هنا",
+  "heroDesc": "أنشئ ملفك الشخصي، حمّل سيرتك الذاتية ودع الذكاء الاصطناعي يقوم بالباقي.",
+  "step1Title": "أنشئ حسابك",
+  "step1Desc": "تسجيل سريع في دقيقتين",
+  "step2Title": "حمّل سيرتك الذاتية",
+  "step2Desc": "الذكاء الاصطناعي يحلل مهاراتك",
+  "step3Title": "استلم عروض العمل",
+  "step3Desc": "متطابقة مع ملفك الشخصي في الوقت الفعلي",
+  "quote": "\"تسجيل بسيط، وذكاء اصطناعي يفهم ملفي الشخصي حقًا.\" — أحمد م.",
+  "heading": "إنشاء حساب",
+  "subtitle": "انضم إلى مجتمع فرصة تونس",
+  "roleCandidat": "أبحث عن عمل",
+  "roleRecruteur": "أنا أوظّف",
+  "orDivider": "أو",
+  "firstNameLabel": "الاسم الأول",
+  "firstNamePlaceholder": "ياسمين",
+  "lastNameLabel": "اللقب",
+  "lastNamePlaceholder": "بن علي",
+  "emailLabel": "البريد الإلكتروني",
+  "emailPlaceholder": "example@domain.com",
+  "passwordLabel": "كلمة المرور",
+  "passwordPlaceholder": "8 أحرف على الأقل",
+  "terms": "أوافق على شروط الاستخدام وسياسة الخصوصية الخاصة بفرصة.",
+  "creating": "جارٍ إنشاء الحساب...",
+  "submit": "إنشاء حسابي",
+  "alreadyAccount": "لديك حساب بالفعل؟",
+  "login": "تسجيل الدخول"
+}
 }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FiEye, FiEyeOff, FiMail, FiLock, FiArrowRight, FiLinkedin, FiLoader, FiMoon, FiSun } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiMail, FiLock, FiArrowRight, FiLoader, FiMoon, FiSun } from 'react-icons/fi';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import LanguageSwitcher from '../composant/LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';

@@ -96,5 +96,36 @@
     "submit": "Se connecter",
     "noAccount": "Pas encore de compte ?",
     "createAccount": "Créer un compte"
-  }
+  },
+  "register": {
+  "tagline": "Rejoignez Fursa",
+  "heroTitle1": "Votre carrière",
+  "heroTitle2": "commence ici",
+  "heroDesc": "Créez votre profil, uploadez votre CV et laissez l'IA faire le reste.",
+  "step1Title": "Créez votre compte",
+  "step1Desc": "Inscription rapide en 2 minutes",
+  "step2Title": "Uploadez votre CV",
+  "step2Desc": "L'IA analyse vos compétences",
+  "step3Title": "Recevez des offres",
+  "step3Desc": "Matchées à votre profil en temps réel",
+  "quote": "\"Une inscription simple, une IA qui comprend vraiment mon profil.\" — Ahmed M.",
+  "heading": "Créer un compte",
+  "subtitle": "Rejoignez la communauté Fursa Tunisie",
+  "roleCandidat": "Je cherche un emploi",
+  "roleRecruteur": "Je recrute",
+  "orDivider": "ou",
+  "firstNameLabel": "Prénom",
+  "firstNamePlaceholder": "Yasmine",
+  "lastNameLabel": "Nom",
+  "lastNamePlaceholder": "Ben Ali",
+  "emailLabel": "Adresse e-mail",
+  "emailPlaceholder": "vous@exemple.com",
+  "passwordLabel": "Mot de passe",
+  "passwordPlaceholder": "Min. 8 caractères",
+  "terms": "J'accepte les conditions d'utilisation et la politique de confidentialité de Fursa.",
+  "creating": "Création en cours...",
+  "submit": "Créer mon compte",
+  "alreadyAccount": "Déjà un compte ?",
+  "login": "Se connecter"
+}
 }

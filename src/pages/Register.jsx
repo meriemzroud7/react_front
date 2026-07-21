@@ -1,13 +1,19 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   FiEye, FiEyeOff, FiMail, FiLock, FiUser, FiArrowRight,
-  FiLinkedin, FiBriefcase, FiLoader, FiCheck,
+   FiBriefcase, FiLoader, FiCheck, FiMoon, FiSun,
 } from 'react-icons/fi';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import LanguageSwitcher from '../composant/LanguageSwitcher';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/auth.css';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState('candidat');
@@ -28,25 +34,50 @@ export default function Register() {
 
   return (
     <div className="auth">
+      {/* Barre de contrôles : langue + thème */}
+      <div className="auth__topbar">
+        <LanguageSwitcher />
+        <button
+          type="button"
+          className="auth__theme-toggle"
+          onClick={toggleTheme}
+          aria-label="Changer le thème"
+          title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+        >
+          {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
+        </button>
+      </div>
+
       <div className="auth__brand">
         <div className="auth__brand-logo">
-          <div className="auth__brand-icon">ف</div>
+          <div className="auth__brand-icon">
+            <img src="/logof.png" alt="Fursa" />
+          </div>
           <span className="auth__brand-arabic">فرصة</span>
           <span className="auth__brand-name">Fursa</span>
         </div>
 
+        {/* Animation Lottie */}
+        <div className="auth__brand-animation">
+          <DotLottieReact
+            src="https://lottie.host/1e582b1c-248d-4162-8dd1-cfa7dd1aa2e7/cWvyxI0mEO.lottie"
+            loop
+            autoplay
+          />
+        </div>
+
         <div className="auth__brand-center">
-          <p className="auth__brand-tagline">انضم إلى فرصة</p>
-          <h2 className="auth__brand-title">Votre carrière<br />commence ici</h2>
-          <p className="auth__brand-desc">
-            Créez votre profil, uploadez votre CV et laissez l'IA faire le reste.
-          </p>
+          <p className="auth__brand-tagline">{t('register.tagline')}</p>
+          <h2 className="auth__brand-title">
+            {t('register.heroTitle1')}<br />{t('register.heroTitle2')}
+          </h2>
+          <p className="auth__brand-desc">{t('register.heroDesc')}</p>
 
           <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {[
-              { step: '01', title: 'Créez votre compte', desc: 'Inscription rapide en 2 minutes' },
-              { step: '02', title: 'Uploadez votre CV', desc: "L'IA analyse vos compétences" },
-              { step: '03', title: 'Recevez des offres', desc: 'Matchées à votre profil en temps réel' },
+              { step: '01', title: t('register.step1Title'), desc: t('register.step1Desc') },
+              { step: '02', title: t('register.step2Title'), desc: t('register.step2Desc') },
+              { step: '03', title: t('register.step3Title'), desc: t('register.step3Desc') },
             ].map((item) => (
               <div key={item.step} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                 <div style={{
@@ -62,20 +93,20 @@ export default function Register() {
             ))}
           </div>
         </div>
-
-        <p className="auth__brand-quote">"Une inscription simple, une IA qui comprend vraiment mon profil." — Ahmed M.</p>
       </div>
 
       <div className="auth__panel">
         <div className="auth__box">
           <div className="auth__mobile-logo">
-            <div className="auth__mobile-icon">ف</div>
+            <div className="auth__mobile-icon">
+              <img src="/logof.png" alt="Fursa" />
+            </div>
             <span className="auth__mobile-arabic">فرصة</span>
           </div>
 
           <div className="auth__heading">
-            <h1>Créer un compte</h1>
-            <p>Rejoignez la communauté Fursa Tunisie</p>
+            <h1>{t('register.heading')}</h1>
+            <p>{t('register.subtitle')}</p>
           </div>
 
           <div className="auth__role-toggle">
@@ -84,30 +115,22 @@ export default function Register() {
               className={`auth__role-btn ${role === 'candidat' ? 'auth__role-btn--active' : ''}`}
               onClick={() => setRole('candidat')}
             >
-              <FiUser size={15} /> Je cherche un emploi
+              <FiUser size={15} /> {t('register.roleCandidat')}
             </button>
             <button
               type="button"
               className={`auth__role-btn ${role === 'recruteur' ? 'auth__role-btn--active' : ''}`}
               onClick={() => setRole('recruteur')}
             >
-              <FiBriefcase size={15} /> Je recrute
+              <FiBriefcase size={15} /> {t('register.roleRecruteur')}
             </button>
           </div>
 
-          <div className="auth__socials">
-            <button type="button" className="auth__social-btn">Google</button>
-            <button type="button" className="auth__social-btn"><FiLinkedin color="#0A66C2" /> LinkedIn</button>
-          </div>
-
-          <div className="auth__divider">
-            <div className="auth__divider-line" /><span>ou</span><div className="auth__divider-line" />
-          </div>
 
           <form className="auth__form" onSubmit={handleSubmit}>
             <div className="auth__row">
               <div className="auth__field">
-                <label>Prénom</label>
+                <label>{t('register.firstNameLabel')}</label>
                 <div className="auth__input-wrap">
                   <FiUser className="auth__icon-left" size={16} />
                   <input
@@ -115,12 +138,12 @@ export default function Register() {
                     required
                     value={form.prenom}
                     onChange={(e) => setForm({ ...form, prenom: e.target.value })}
-                    placeholder="Yasmine"
+                    placeholder={t('register.firstNamePlaceholder')}
                   />
                 </div>
               </div>
               <div className="auth__field">
-                <label>Nom</label>
+                <label>{t('register.lastNameLabel')}</label>
                 <div className="auth__input-wrap">
                   <FiUser className="auth__icon-left" size={16} />
                   <input
@@ -128,14 +151,14 @@ export default function Register() {
                     required
                     value={form.nom}
                     onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                    placeholder="Ben Ali"
+                    placeholder={t('register.lastNamePlaceholder')}
                   />
                 </div>
               </div>
             </div>
 
             <div className="auth__field">
-              <label>Adresse e-mail</label>
+              <label>{t('register.emailLabel')}</label>
               <div className="auth__input-wrap">
                 <FiMail className="auth__icon-left" size={16} />
                 <input
@@ -143,13 +166,13 @@ export default function Register() {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="vous@exemple.com"
+                  placeholder={t('register.emailPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="auth__field">
-              <label>Mot de passe</label>
+              <label>{t('register.passwordLabel')}</label>
               <div className="auth__input-wrap">
                 <FiLock className="auth__icon-left" size={16} />
                 <input
@@ -158,7 +181,7 @@ export default function Register() {
                   minLength={8}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder="Min. 8 caractères"
+                  placeholder={t('register.passwordPlaceholder')}
                 />
                 <button type="button" className="auth__toggle-eye" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
@@ -185,20 +208,20 @@ export default function Register() {
               >
                 {agreed && <FiCheck size={13} />}
               </span>
-              J'accepte les conditions d'utilisation et la politique de confidentialité de Fursa.
+              {t('register.terms')}
             </label>
 
             <button type="submit" className="auth__submit" disabled={isLoading || !agreed}>
               {isLoading ? (
-                <><FiLoader className="auth__spinner" /> Création en cours...</>
+                <><FiLoader className="auth__spinner" /> {t('register.creating')}</>
               ) : (
-                <>Créer mon compte <FiArrowRight size={16} /></>
+                <>{t('register.submit')} <FiArrowRight size={16} /></>
               )}
             </button>
           </form>
 
           <p className="auth__switch">
-            Déjà un compte ? <Link to="/login">Se connecter</Link>
+            {t('register.alreadyAccount')} <Link to="/login">{t('register.login')}</Link>
           </p>
         </div>
       </div>
