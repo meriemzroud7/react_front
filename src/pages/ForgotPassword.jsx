@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/ForgotPassword.css";
-
+import { forgotPassword } from "../services/apiServiceUser";
+import { useNavigate } from "react-router-dom";
 const Mail = ({ size = 18, ...props }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -17,31 +18,38 @@ const ArrowRight = ({ size = 18, ...props }) => (
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const navigate = useNavigate();
   const [status, setStatus] = useState("idle"); // idle | loading | sent | error
   const [errorMsg, setErrorMsg] = useState("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus("loading");
-    setErrorMsg("");
+  setStatus("loading");
+  setErrorMsg("");
 
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/users/forgot-password?email=${encodeURIComponent(email)}`,
-        { method: "POST" }
-      );
+  try {
 
-      if (!response.ok) {
-        throw new Error("Impossible d'envoyer le code. Vérifiez votre adresse e-mail.");
-      }
+    await forgotPassword(email);
 
-      setStatus("sent");
-    } catch (err) {
-      setStatus("error");
-      setErrorMsg(err.message || "Une erreur est survenue.");
-    }
-  };
+    setStatus("sent");
 
+    setTimeout(() => {
+      navigate("/reset-password", {
+        state: { email }
+      });
+    }, 1500);
+
+  } catch (error) {
+
+    setStatus("error");
+
+    setErrorMsg(
+      error.response?.data?.message ||
+      "Impossible d'envoyer le code."
+    );
+
+  }
+};
   return (
     <div className="fursa-shell">
       {/* Panneau gauche - branding */}

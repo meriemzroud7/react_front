@@ -1,5 +1,7 @@
 import { useState } from "react";
 import "../styles/ResetPassword.css";
+import { resetPassword } from "../services/apiServiceUser";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Lock = ({ size = 18, ...props }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -39,36 +41,47 @@ const EyeOff = ({ size = 18, ...props }) => (
 );
 
 export default function ResetPassword() {
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState(location.state?.email || "");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [errorMsg, setErrorMsg] = useState("");
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus("loading");
-    setErrorMsg("");
 
-    try {
-      const params = new URLSearchParams({ email, code, newPassword });
-      const response = await fetch(
-        `http://localhost:8080/api/users/reset-password?${params.toString()}`,
-        { method: "POST" }
-      );
+  e.preventDefault();
 
-      if (!response.ok) {
-        throw new Error("Code invalide ou expiré. Veuillez réessayer.");
-      }
+  setStatus("loading");
+  setErrorMsg("");
 
-      setStatus("success");
-    } catch (err) {
-      setStatus("error");
-      setErrorMsg(err.message || "Une erreur est survenue.");
-    }
-  };
+  try {
 
+    await resetPassword(
+      email,
+      code,
+      newPassword
+    );
+
+    setStatus("success");
+
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+
+  } catch (error) {
+
+    setStatus("error");
+
+    setErrorMsg(
+      error.response?.data?.message ||
+      "Code invalide ou expiré."
+    );
+
+  }
+
+};
   return (
     <div className="fursa-shell">
       {/* Panneau gauche - branding */}
