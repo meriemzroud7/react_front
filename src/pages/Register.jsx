@@ -8,6 +8,7 @@ import {
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import LanguageSwitcher from '../composant/LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
+import { createUser } from '../services/apiServiceUser';
 import '../styles/auth.css';
 
 export default function Register() {
@@ -20,15 +21,46 @@ export default function Register() {
   const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState({ prenom: '', nom: '', email: '', password: '' });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!agreed) return;
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/verify');
-    }, 1200);
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!agreed) return;
+
+  setIsLoading(true);
+
+  try {
+
+    const user = {
+      prenom: form.prenom,
+      nom: form.nom,
+      email: form.email,
+      password: form.password,
+        role: role.toUpperCase()
+    };
+
+    console.log(user);
+    await createUser(user);
+
+    navigate('/verify', {
+      state: {
+        email: form.email,
+        role: role
+      }
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Erreur création compte"
+    );
+
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const strengthLevel = Math.min(4, Math.floor(form.password.length / 3));
 

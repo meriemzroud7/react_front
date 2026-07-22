@@ -1,16 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FiMail, FiArrowLeft, FiCheckCircle, FiRefreshCw, FiLoader } from 'react-icons/fi';
+import { verifyAccount } from '../services/apiServiceUser';
+import { useAuth } from '../context/AuthContext';
 import '../styles/auth.css';
 
 const CODE_LENGTH = 6;
 
 export default function CodeVerification() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { email, role } = location.state || {};
+  const { login } = useAuth();
   const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [countdown, setCountdown] = useState(59);
   const [canResend, setCanResend] = useState(false);
   const inputsRef = useRef([]);
@@ -58,20 +64,31 @@ export default function CodeVerification() {
   const code = digits.join('');
   const isFilled = code.length === CODE_LENGTH;
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (!isFilled) return;
     setIsVerifying(true);
-    setTimeout(() => {
+    setIsError(false);
+    setErrorMessage('');
+
+    try {
+      const response = await verifyAccount(email, code);
+      login(response.data); // stocke l'utilisateur (avec son rôle) dans le contexte + localStorage
+      setIsSuccess(true);
+      setTimeout(() => {
+        if (role === 'recruteur') {
+          navigate('/recruteur');
+        } else {
+          navigate('/candidat');
+        }
+      }, 2000);
+    } catch (err) {
+      setIsError(true);
+      setErrorMessage(err.response?.data?.message || 'Code incorrect. Réessayez.');
+      setDigits(Array(CODE_LENGTH).fill(''));
+      inputsRef.current[0]?.focus();
+    } finally {
       setIsVerifying(false);
-      if (code === '123456') {
-        setIsSuccess(true);
-        setTimeout(() => navigate('/'), 2000);
-      } else {
-        setIsError(true);
-        setDigits(Array(CODE_LENGTH).fill(''));
-        inputsRef.current[0]?.focus();
-      }
-    }, 1200);
+    }
   };
 
   const handleResend = () => {
@@ -103,7 +120,7 @@ export default function CodeVerification() {
         <div className="verify__icon"><FiMail size={28} /></div>
         <h1>Vérifiez votre e-mail</h1>
         <p className="verify__sub">
-          Entrez le code à 6 chiffres envoyé à votre adresse e-mail. (Code de démo : <strong>123456</strong>)
+          Entrez le code à 6 chiffres envoyé à {email}.
         </p>
 
         <div className="verify__digits" onPaste={handlePaste}>
@@ -122,7 +139,7 @@ export default function CodeVerification() {
           ))}
         </div>
 
-        {isError && <p className="verify__error">Code incorrect. Réessayez.</p>}
+        {isError && <p className="verify__error">{errorMessage}</p>}
 
         <button className="verify__submit" onClick={handleVerify} disabled={!isFilled || isVerifying}>
           {isVerifying ? (

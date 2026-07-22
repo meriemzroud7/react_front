@@ -5,24 +5,67 @@ import { FiEye, FiEyeOff, FiMail, FiLock, FiArrowRight, FiLoader, FiMoon, FiSun 
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import LanguageSwitcher from '../composant/LanguageSwitcher';
 import { useTheme } from '../context/ThemeContext';
+import { login } from '../services/apiServiceUser';
+import { useAuth } from '../context/AuthContext';
+
 import '../styles/auth.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '' });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      navigate('/verify');
-    }, 1200);
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  setIsLoading(true);
+
+  try {
+
+    const response = await login(
+      form.email,
+      form.password
+    );
+
+    authLogin(response.data);
+
+    const role = response.data.role;
+
+    switch (role) {
+
+      case "ADMIN":
+        navigate("/admin");
+        break;
+
+      case "RECRUTEUR":
+        navigate("/recruteur");
+        break;
+
+      case "CANDIDAT":
+        navigate("/candidat");
+        break;
+
+      default:
+        alert("Rôle inconnu");
+    }
+
+  } catch (error) {
+
+    alert(
+      error.response?.data?.message ||
+      "Email ou mot de passe incorrect"
+    );
+
+  } finally {
+
+    setIsLoading(false);
+
+  }
+};
 
   return (
     <div className="auth">
