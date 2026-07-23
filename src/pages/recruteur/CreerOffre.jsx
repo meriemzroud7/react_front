@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext'; // ajuste le chemin si besoin
+import { createOffre } from '../../services/apiServiceOffres'; // ajuste le chemin si besoin
 import {
   FiCpu, FiSend, FiSave, FiX, FiPlus, FiTrash2,
   FiAlertCircle, FiCheckCircle, FiFileText
@@ -11,11 +13,23 @@ const INIT = {
   limite: '', obligatoires: [''], souhaitees: [''], poids: {},
 };
 
+// Mapping des labels français vers l'enum backend TypeContrat
+const CONTRAT_MAP = {
+  'CDI': 'CDI',
+  'CDD': 'CDD',
+  'Stage PFE': 'STAGE',
+  "Stage d'été": 'STAGE',
+  'Freelance': 'FREELANCE',
+};
+
 export default function CreerOffre() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [form, setForm] = useState(INIT);
   const [saved, setSaved] = useState(false);
   const [published, setPublished] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -28,8 +42,85 @@ export default function CreerOffre() {
   const addItem = (key) => set(key, [...form[key], '']);
   const removeItem = (key, idx) => set(key, form[key].filter((_, i) => i !== idx));
 
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 3000); };
-  const handlePublish = () => { setPublished(true); setTimeout(() => navigate('/recruteur/offres'), 1500); };
+  // Construit le payload attendu par le backend (Offre.java) à partir du formulaire
+  const buildPayload = () => {
+    const descriptionComplete = [
+      form.description,
+      form.missions ? `\n\nMissions:\n${form.missions}` : '',
+      form.niveau ? `\n\nNiveau d'études: ${form.niveau}` : '',
+      form.experience ? `\nExpérience requise: ${form.experience}` : '',
+      form.salaire ? `\nSalaire: ${form.salaire}` : '',
+    ].join('');
+
+    const competencesRequises = [
+      ...form.competences.split(',').map(c => c.trim()).filter(Boolean),
+      ...form.obligatoires.filter(Boolean),
+      ...form.souhaitees.filter(Boolean),
+    ];
+
+    return {
+      titre: form.titre,
+      description: descriptionComplete,
+      competencesRequises,
+      localisation: form.localisation,
+      typeContrat: CONTRAT_MAP[form.contrat] || null,
+      dateExpiration: form.limite ? `${form.limite}T23:59:59` : null,
+      // NOTE: le backend n'a pas de statut "brouillon" dans l'enum StatutOffre (ACTIVE/EXPIREE/CLOTUREE)
+      // donc les deux boutons créent une offre ACTIVE pour l'instant
+      statut: 'ACTIVE',
+      // NOTE: adapte user?.id -> user?._id selon ce que ton backend renvoie réellement au login
+      recruteurId: user?.id || user?._id,
+    };
+  };
+
+  const validateForm = () => {
+    if (!form.titre.trim()) return 'Le titre est obligatoire';
+    if (!form.description.trim()) return 'La description est obligatoire';
+    if (!form.niveau) return "Le niveau d'études est obligatoire";
+    if (!form.experience) return "L'expérience requise est obligatoire";
+    if (!form.contrat) return 'Le type de contrat est obligatoire';
+    if (!form.localisation) return 'La localisation est obligatoire';
+    if (!form.limite) return 'La date limite est obligatoire';
+    return '';
+  };
+
+  const handleSave = async () => {
+    setError('');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setLoading(true);
+    try {
+      await createOffre(buildPayload());
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur lors de l'enregistrement");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    setError('');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setLoading(true);
+    try {
+      await createOffre(buildPayload());
+      setPublished(true);
+      setTimeout(() => navigate('/recruteur/offres'), 1500);
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur lors de la publication");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -40,14 +131,19 @@ export default function CreerOffre() {
             <p className="rp-subtitle">Remplissez le formulaire et configurez les critères IA de sélection</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="rp-btn rp-btn--outline" onClick={handleSave}>
+            <button className="rp-btn rp-btn--outline" onClick={handleSave} disabled={loading}>
               <FiSave /> Enregistrer brouillon
             </button>
-            <button className="rp-btn rp-btn--primary" onClick={handlePublish}>
+            <button className="rp-btn rp-btn--primary" onClick={handlePublish} disabled={loading}>
               <FiSend /> Publier l'offre
             </button>
           </div>
         </div>
+        {error && (
+          <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.2)', borderRadius: 'var(--radius-sm)', color: '#dc2626', fontSize: '0.85rem', fontWeight: 600 }}>
+            <FiAlertCircle /> {error}
+          </div>
+        )}
         {saved && (
           <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 'var(--radius-sm)', color: 'var(--success)', fontSize: '0.85rem', fontWeight: 600 }}>
             <FiCheckCircle /> Brouillon enregistré avec succès
@@ -227,10 +323,10 @@ export default function CreerOffre() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            <button className="rp-btn rp-btn--primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handlePublish}>
+            <button className="rp-btn rp-btn--primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handlePublish} disabled={loading}>
               <FiSend /> Publier l'offre
             </button>
-            <button className="rp-btn rp-btn--outline" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSave}>
+            <button className="rp-btn rp-btn--outline" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSave} disabled={loading}>
               <FiSave /> Enregistrer brouillon
             </button>
             <button className="rp-btn rp-btn--danger" style={{ width: '100%', justifyContent: 'center' }} onClick={() => navigate('/recruteur/offres')}>
