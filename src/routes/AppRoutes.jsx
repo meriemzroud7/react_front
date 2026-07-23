@@ -25,6 +25,7 @@ import Rapports from '../pages/recruteur/Rapports';
 import Parametres from '../pages/recruteur/Parametres';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
+import ModifierOffre from '../pages/recruteur/ModifierOffre';
 
 function AppRoutes() {
   return (
@@ -58,6 +59,7 @@ function AppRoutes() {
         <Route path="messagerie" element={<Messagerie />} />
         <Route path="rapports" element={<Rapports />} />
         <Route path="parametres" element={<Parametres />} />
+        <Route path="offres/:id/modifier" element={<ModifierOffre />} />
        
       </Route>
 
