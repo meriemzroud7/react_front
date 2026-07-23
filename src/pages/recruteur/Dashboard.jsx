@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import {
   FiBriefcase, FiUsers, FiCalendar, FiCheckCircle, FiAward,
@@ -39,6 +40,7 @@ const SHORTCUTS = [
 ];
 
 export default function Dashboard() {
+  const { user } = useAuth();
   return (
     <div>
       {/* Header */}
@@ -46,8 +48,7 @@ export default function Dashboard() {
         <div className="rp-header__top">
           <div>
             <h1 className="rp-title">Tableau de bord</h1>
-            <p className="rp-subtitle">Bonjour Mariem 👋 — Voici un aperçu de vos activités de recrutement</p>
-          </div>
+            <p className="rp-subtitle">Bonjour {user?.prenom || 'Recruteur'} 👋 — Voici un aperçu de vos activités de recrutement</p>          </div>
           <Link to="/recruteur/offres/nouvelle" className="rp-btn rp-btn--primary">
             <FiPlusCircle /> Nouvelle offre
           </Link>
