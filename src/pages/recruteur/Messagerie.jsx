@@ -1,33 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FiSearch, FiSend, FiPaperclip, FiMoreVertical, FiMail } from 'react-icons/fi';
-
-const CONVERSATIONS = [
-  { id: 1, name: 'Yasmine Ben Ali', avatar: 'YB', color: '#1e4fa3', last: 'Merci pour votre retour...', time: '14:32', unread: 2, online: true },
-  { id: 2, name: 'Ahmed Maalej', avatar: 'AM', color: '#0f766e', last: 'Je serai disponible demain.', time: '11:15', unread: 0, online: false },
-  { id: 3, name: 'Sarra Chaari', avatar: 'SC', color: '#7c3aed', last: 'Parfait, à bientôt !', time: 'Hier', unread: 0, online: true },
-  { id: 4, name: 'Fathi Hamdi', avatar: 'FH', color: '#b45309', last: 'Bonjour, j\'ai une question...', time: 'Lun', unread: 1, online: false },
-];
-
-const INIT_MESSAGES = {
-  1: [
-    { from: 'them', text: 'Bonjour, j\'ai bien reçu votre invitation à l\'entretien.' },
-    { from: 'me', text: 'Bonjour Yasmine ! Parfait, nous vous attendons le 20 janvier à 14h.' },
-    { from: 'them', text: 'Merci pour votre retour, je confirme ma présence.' },
-    { from: 'them', text: 'Dois-je préparer quelque chose de particulier ?' },
-  ],
-  2: [
-    { from: 'me', text: 'Bonjour Ahmed, votre candidature est à l\'étude.' },
-    { from: 'them', text: 'Bonjour, merci. Je serai disponible demain pour un entretien.' },
-  ],
-  3: [
-    { from: 'them', text: 'Bonjour, j\'ai uploadé mon CV mis à jour.' },
-    { from: 'me', text: 'Reçu ! Notre IA l\'analysera dans les prochaines minutes.' },
-    { from: 'them', text: 'Parfait, à bientôt !' },
-  ],
-  4: [
-    { from: 'them', text: 'Bonjour, j\'ai une question concernant le poste Product Manager.' },
-  ],
-};
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { FiSearch, FiSend, FiPaperclip, FiMoreVertical, FiMail, FiEdit } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import {
+  getUserConversations,
+  getConversationHistory,
+  markConversationAsRead,
+  getOrCreateConversation,
+} from '../../services/apiServiceMessagerie';
+import {
+  connectWebSocket,
+  subscribeToUserStatus,
+  sendChatMessage,
+  sendReadReceipt,
+  disconnectWebSocket,
+} from '../../services/websocketMessagerie';
+import { getUserById, getUsers } from '../../services/apiServiceUser'; // <-- adapte le nom du fichier si ton service User s'appelle autrement
 
 const TEMPLATES = [
   'Bonjour [Nom], votre candidature a bien été reçue. Nous revenons vers vous prochainement.',
@@ -36,24 +23,238 @@ const TEMPLATES = [
   'Félicitations ! Nous souhaitons vous faire une offre pour le poste de [Poste].',
 ];
 
+const AVATAR_COLORS = ['#1e4fa3', '#0f766e', '#7c3aed', '#b45309', '#be123c', '#0369a1'];
+
+// ---- petits helpers d'affichage (pas de logique metier) ----
+function displayName(user) {
+  if (!user) return 'Utilisateur';
+  const full = `${user.prenom ?? user.firstName ?? ''} ${user.nom ?? user.lastName ?? ''}`.trim();
+  return full || user.email || 'Utilisateur';
+}
+
+function initials(name) {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join('');
+}
+
+function colorFromId(id) {
+  const str = String(id ?? '');
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function formatTime(isoDate) {
+  if (!isoDate) return '';
+  const date = new Date(isoDate);
+  const today = new Date();
+  const isToday = date.toDateString() === today.toDateString();
+  if (isToday) return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) return 'Hier';
+  return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+}
+
 export default function Messagerie() {
-  const [activeConv, setActiveConv] = useState(1);
-  const [messages, setMessages] = useState(INIT_MESSAGES);
+  const { user: currentUser } = useAuth(); // <-- meme source que Dashboard.jsx
+  const currentUserId = currentUser?.id;
+
+  const [conversations, setConversations] = useState([]);
+  const [activeConvId, setActiveConvId] = useState(null);
+  const [messages, setMessages] = useState({}); // { [conversationId]: ChatMessage[] }
   const [input, setInput] = useState('');
   const [showTemplates, setShowTemplates] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const endRef = useRef(null);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, activeConv]);
+  const activeConv = conversations.find((c) => c.conversationId === activeConvId);
+  const msgs = useMemo(() => messages[activeConvId] || [], [messages, activeConvId]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [msgs, activeConvId]);
+
+  // ---- chargement initial des conversations + enrichissement (nom/avatar du candidat) ----
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    (async () => {
+      try {
+        const { data } = await getUserConversations(currentUserId);
+
+        const enriched = await Promise.all(
+          data.map(async (conv) => {
+            const otherUserId = conv.participantIds.find((id) => id !== currentUserId);
+            let otherUser = null;
+            try {
+              const res = await getUserById(otherUserId);
+              otherUser = res.data;
+            } catch {
+              otherUser = null;
+            }
+            const name = displayName(otherUser);
+            return {
+              conversationId: conv.id,
+              otherUserId,
+              name,
+              avatar: initials(name),
+              color: colorFromId(otherUserId),
+              last: conv.lastMessage,
+              time: formatTime(conv.lastMessageDate),
+              unread: conv.unreadCount?.[currentUserId] || 0,
+              online: false,
+            };
+          })
+        );
+
+        setConversations(enriched);
+        if (enriched.length > 0) setActiveConvId(enriched[0].conversationId);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [currentUserId]);
+
+  // ---- connexion websocket : reception des messages + statut en ligne ----
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    connectWebSocket(currentUserId, {
+      onConnected: () => {
+        conversations.forEach((c) =>
+          subscribeToUserStatus(c.otherUserId, (userId, status) => {
+            setConversations((prev) =>
+              prev.map((c) => (c.otherUserId === userId ? { ...c, online: status === 'ONLINE' } : c))
+            );
+          })
+        );
+      },
+      onMessageReceived: (message) => {
+        setMessages((prev) => ({
+          ...prev,
+          [message.conversationId]: [...(prev[message.conversationId] || []), message],
+        }));
+
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.conversationId === message.conversationId
+              ? {
+                  ...c,
+                  last: message.content,
+                  time: formatTime(message.timestamp),
+                  unread:
+                    c.conversationId === activeConvId ? 0 : (c.unread || 0) + (message.senderId !== currentUserId ? 1 : 0),
+                }
+              : c
+          )
+        );
+      },
+    });
+
+    return () => disconnectWebSocket();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUserId, conversations.length]);
+
+  // ---- ouverture d'une conversation : charge l'historique + marque comme lu ----
+  const openConversation = useCallback(
+    async (conversationId) => {
+      setActiveConvId(conversationId);
+
+      if (!messages[conversationId]) {
+        const { data } = await getConversationHistory(conversationId);
+        setMessages((prev) => ({ ...prev, [conversationId]: data }));
+      }
+
+      sendReadReceipt(conversationId, currentUserId);
+      markConversationAsRead(conversationId, currentUserId).catch(() => {});
+      setConversations((prev) => prev.map((c) => (c.conversationId === conversationId ? { ...c, unread: 0 } : c)));
+    },
+    [messages, currentUserId]
+  );
+
+  // ---- ouvre le panneau "nouveau message" et charge tous les utilisateurs (candidats) ----
+  const openNewChat = useCallback(async () => {
+    setShowNewChat(true);
+    if (allUsers.length > 0) return; // deja charge
+
+    setLoadingUsers(true);
+    try {
+      const { data } = await getUsers();
+      setAllUsers(data.filter((u) => u.id !== currentUserId));
+    } finally {
+      setLoadingUsers(false);
+    }
+  }, [allUsers.length, currentUserId]);
+
+  // ---- demarre (ou rouvre) une conversation avec un utilisateur choisi dans la liste ----
+  const startConversationWith = useCallback(
+    async (otherUser) => {
+      const otherUserId = otherUser.id;
+
+      // si la conversation existe deja localement, on l'ouvre simplement
+      const existing = conversations.find((c) => c.otherUserId === otherUserId);
+      if (existing) {
+        setShowNewChat(false);
+        openConversation(existing.conversationId);
+        return;
+      }
+
+      const { data: conv } = await getOrCreateConversation(currentUserId, otherUserId, null);
+      const name = displayName(otherUser);
+      const newConv = {
+        conversationId: conv.id,
+        otherUserId,
+        name,
+        avatar: initials(name),
+        color: colorFromId(otherUserId),
+        last: conv.lastMessage,
+        time: formatTime(conv.lastMessageDate),
+        unread: 0,
+        online: false,
+      };
+
+      setConversations((prev) => [newConv, ...prev]);
+      setShowNewChat(false);
+      setActiveConvId(newConv.conversationId);
+      subscribeToUserStatus(otherUserId, (userId, status) => {
+        setConversations((prev) =>
+          prev.map((c) => (c.otherUserId === userId ? { ...c, online: status === 'ONLINE' } : c))
+        );
+      });
+    },
+    [conversations, currentUserId, openConversation]
+  );
 
   const send = () => {
-    if (!input.trim()) return;
-    setMessages(prev => ({ ...prev, [activeConv]: [...(prev[activeConv] || []), { from: 'me', text: input.trim() }] }));
+    if (!input.trim() || !activeConv) return;
+
+    sendChatMessage({
+      senderId: currentUserId,
+      senderName: displayName(currentUser),
+      receiverId: activeConv.otherUserId,
+      receiverName: activeConv.name,
+      content: input.trim(),
+    });
+
     setInput('');
     setShowTemplates(false);
   };
 
-  const conv = CONVERSATIONS.find(c => c.id === activeConv);
-  const msgs = messages[activeConv] || [];
+  if (!currentUserId) {
+    return <div style={{ padding: '2rem' }}>Utilisateur non connecté.</div>;
+  }
+
+  if (loading) {
+    return <div style={{ padding: '2rem' }}>Chargement des conversations...</div>;
+  }
 
   return (
     <div>
@@ -67,19 +268,49 @@ export default function Messagerie() {
       <div className="rp-card" style={{ display: 'grid', gridTemplateColumns: '300px 1fr', height: '70vh', overflow: 'hidden' }}>
         {/* Conversations list */}
         <div style={{ borderRight: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-light)' }}>
-            <div style={{ position: 'relative' }}>
+          <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-light)', display: 'flex', gap: '0.5rem' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
               <FiSearch style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted-light)' }} size={14} />
               <input placeholder="Rechercher..." style={{ width: '100%', padding: '0.5rem 0.75rem 0.5rem 2rem', border: '1.5px solid var(--border)', borderRadius: 100, fontSize: '0.82rem', outline: 'none', fontFamily: 'var(--font)' }} />
             </div>
+            <button className="rp-btn rp-btn--primary rp-btn--icon" onClick={openNewChat} title="Nouveau message">
+              <FiEdit size={15} />
+            </button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {CONVERSATIONS.map(c => (
-              <div key={c.id} onClick={() => setActiveConv(c.id)} style={{
+            {showNewChat ? (
+              <>
+                <div style={{ padding: '0.6rem 1rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--muted)', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Choisir un candidat</span>
+                  <button onClick={() => setShowNewChat(false)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>Annuler</button>
+                </div>
+                {loadingUsers && <div style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--muted)' }}>Chargement...</div>}
+                {!loadingUsers && allUsers.map((u) => {
+                  const name = displayName(u);
+                  return (
+                    <div key={u.id} onClick={() => startConversationWith(u)} style={{
+                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem',
+                      cursor: 'pointer', borderBottom: '1px solid var(--border-light)'
+                    }}>
+                      <div className="rp-avatar" style={{ width: 36, height: 36, background: colorFromId(u.id), fontSize: '0.75rem' }}>{initials(name)}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+                        {u.email && <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{u.email}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+                {!loadingUsers && allUsers.length === 0 && (
+                  <div style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--muted)' }}>Aucun candidat trouvé.</div>
+                )}
+              </>
+            ) : (
+              conversations.map((c) => (
+              <div key={c.conversationId} onClick={() => openConversation(c.conversationId)} style={{
                 display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1rem',
                 cursor: 'pointer', borderBottom: '1px solid var(--border-light)',
-                background: activeConv === c.id ? 'rgba(30,79,163,0.06)' : 'transparent',
-                borderLeft: `3px solid ${activeConv === c.id ? 'var(--primary)' : 'transparent'}`,
+                background: activeConvId === c.conversationId ? 'rgba(30,79,163,0.06)' : 'transparent',
+                borderLeft: `3px solid ${activeConvId === c.conversationId ? 'var(--primary)' : 'transparent'}`,
                 transition: 'all 0.15s'
               }}>
                 <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -97,7 +328,8 @@ export default function Messagerie() {
                   <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--primary)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{c.unread}</div>
                 )}
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
 
@@ -105,11 +337,11 @@ export default function Messagerie() {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--border-light)' }}>
-            <div className="rp-avatar" style={{ width: 38, height: 38, background: conv?.color, fontSize: '0.8rem', flexShrink: 0 }}>{conv?.avatar}</div>
+            <div className="rp-avatar" style={{ width: 38, height: 38, background: activeConv?.color, fontSize: '0.8rem', flexShrink: 0 }}>{activeConv?.avatar}</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{conv?.name}</div>
-              <div style={{ fontSize: '0.72rem', color: conv?.online ? 'var(--success)' : 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                {conv?.online ? <><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} /> En ligne</> : 'Hors ligne'}
+              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{activeConv?.name}</div>
+              <div style={{ fontSize: '0.72rem', color: activeConv?.online ? 'var(--success)' : 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                {activeConv?.online ? <><span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} /> En ligne</> : 'Hors ligne'}
               </div>
             </div>
             <button className="rp-btn rp-btn--outline rp-btn--sm" style={{ marginLeft: 'auto' }}><FiMoreVertical size={14} /></button>
@@ -117,16 +349,16 @@ export default function Messagerie() {
 
           {/* Messages */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            {msgs.map((m, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: m.from === 'me' ? 'row-reverse' : 'row', gap: '0.5rem', alignItems: 'flex-end' }}>
-                {m.from === 'them' && <div className="rp-avatar" style={{ width: 28, height: 28, background: conv?.color, fontSize: '0.6rem', flexShrink: 0 }}>{conv?.avatar}</div>}
+            {msgs.map((m) => (
+              <div key={m.id ?? `${m.senderId}-${m.timestamp}`} style={{ display: 'flex', flexDirection: m.senderId === currentUserId ? 'row-reverse' : 'row', gap: '0.5rem', alignItems: 'flex-end' }}>
+                {m.senderId !== currentUserId && <div className="rp-avatar" style={{ width: 28, height: 28, background: activeConv?.color, fontSize: '0.6rem', flexShrink: 0 }}>{activeConv?.avatar}</div>}
                 <div style={{
                   maxWidth: '75%', padding: '0.65rem 0.9rem', borderRadius: 14, fontSize: '0.85rem', lineHeight: 1.5,
-                  background: m.from === 'me' ? 'var(--primary)' : 'var(--background)',
-                  color: m.from === 'me' ? '#fff' : 'var(--foreground)',
-                  borderBottomRightRadius: m.from === 'me' ? 4 : 14,
-                  borderBottomLeftRadius: m.from === 'them' ? 4 : 14,
-                }}>{m.text}</div>
+                  background: m.senderId === currentUserId ? 'var(--primary)' : 'var(--background)',
+                  color: m.senderId === currentUserId ? '#fff' : 'var(--foreground)',
+                  borderBottomRightRadius: m.senderId === currentUserId ? 4 : 14,
+                  borderBottomLeftRadius: m.senderId !== currentUserId ? 4 : 14,
+                }}>{m.content}</div>
               </div>
             ))}
             <div ref={endRef} />
