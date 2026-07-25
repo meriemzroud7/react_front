@@ -19,13 +19,13 @@ export function connectWebSocket(userId, callbacks = {}) {
         webSocketFactory: () => new SockJS(`${WS_URL}?userId=${userId}`),
         reconnectDelay: 5000,
         onConnect: () => {
-            // reception des messages prives envoyes a cet utilisateur
-            stompClient.subscribe('/user/queue/messages', (msg) => {
+            // reception des messages en temps reel : topic dedie a ce userId
+            stompClient.subscribe(`/topic/user.${userId}.messages`, (msg) => {
                 onMessageReceived?.(JSON.parse(msg.body));
             });
 
             // reception des accuses de lecture
-            stompClient.subscribe('/user/queue/read-receipts', (msg) => {
+            stompClient.subscribe(`/topic/user.${userId}.read-receipts`, (msg) => {
                 onReadReceipt?.(JSON.parse(msg.body));
             });
 
