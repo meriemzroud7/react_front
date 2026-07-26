@@ -3,11 +3,14 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import AuthLayout from '../layouts/AuthLayout';
 import RecruteurLayout from '../layouts/RecruteurLayout';
+import CandidatLayout from '../layouts/CandidatLayout';
+import AdminLayout from '../layouts/AdminLayout';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import CodeVerification from '../pages/CodeVerification';
 import NotFound from '../pages/NotFound';
+
 
 /* Espace Recruteur */
 import Dashboard from '../pages/recruteur/Dashboard';
@@ -27,6 +30,43 @@ import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import ModifierOffre from '../pages/recruteur/ModifierOffre';
 
+
+
+/* Espace Candidat */
+import CandidatDashboard from '../pages/candidat/Dashboard';
+import CandidatProfile from '../pages/candidat/Profile';
+import CandidatCV from '../pages/candidat/CVManager';
+import CandidatCoverLetters from '../pages/candidat/CoverLetters';
+import CandidatJobSearch from '../pages/candidat/JobSearch';
+import CandidatJobDetails from '../pages/candidat/JobDetails';
+import CandidatRecommendations from '../pages/candidat/Recommendations';
+import CandidatApplications from '../pages/candidat/MyApplications';
+import CandidatApplicationTracking from '../pages/candidat/ApplicationTracking';
+import CandidatInterviews from '../pages/candidat/Interviews';
+import CandidatInterviewRoom from '../pages/candidat/InterviewRoom';
+import CandidatMessaging from '../pages/candidat/Messaging';
+import CandidatSavedJobs from '../pages/candidat/SavedJobs';
+import CandidatNotifications from '../pages/candidat/Notifications';
+import CandidatSettings from '../pages/candidat/Settings';
+
+
+/* Espace Administrateur */
+import AdminDashboard from '../pages/admin/Dashboard';
+import AdminUtilisateurs from '../pages/admin/Utilisateurs';
+import AdminEntreprises from '../pages/admin/Entreprises';
+import AdminOffres from '../pages/admin/Offres';
+import AdminCandidatures from '../pages/admin/Candidatures';
+import AdminEntretiens from '../pages/admin/Entretiens';
+import AdminReferentiels from '../pages/admin/Referentiels';
+import AdminCompetences from '../pages/admin/Competences';
+import AdminIA from '../pages/admin/IA';
+import AdminSignalements from '../pages/admin/Signalements';
+import AdminRapports from '../pages/admin/Rapports';
+import AdminNotifications from '../pages/admin/Notifications';
+import AdminParametres from '../pages/admin/Parametres';
+import AdminLogs from '../pages/admin/Logs';
+import AdminMaintenance from '../pages/admin/Maintenance';
+
 function AppRoutes() {
   return (
     <Routes>
@@ -42,6 +82,27 @@ function AppRoutes() {
         <Route path="/verify" element={<CodeVerification />} />
          <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+      </Route>
+
+
+      
+      {/* ── Espace Administrateur ── */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="utilisateurs" element={<AdminUtilisateurs />} />
+        <Route path="entreprises" element={<AdminEntreprises />} />
+        <Route path="offres" element={<AdminOffres />} />
+        <Route path="candidatures" element={<AdminCandidatures />} />
+        <Route path="entretiens" element={<AdminEntretiens />} />
+        <Route path="referentiels" element={<AdminReferentiels />} />
+        <Route path="competences" element={<AdminCompetences />} />
+        <Route path="ia" element={<AdminIA />} />
+        <Route path="signalements" element={<AdminSignalements />} />
+        <Route path="rapports" element={<AdminRapports />} />
+        <Route path="notifications" element={<AdminNotifications />} />
+        <Route path="parametres" element={<AdminParametres />} />
+        <Route path="logs" element={<AdminLogs />} />
+        <Route path="maintenance" element={<AdminMaintenance />} />
       </Route>
 
       {/* ── Espace Recruteur ── */}
@@ -61,6 +122,26 @@ function AppRoutes() {
         <Route path="parametres" element={<Parametres />} />
         <Route path="offres/:id/modifier" element={<ModifierOffre />} />
        
+      </Route>
+
+      
+      {/* ── Espace Candidat ── */}
+      <Route path="/candidat" element={<CandidatLayout />}>
+        <Route index element={<CandidatDashboard />} />
+        <Route path="profil" element={<CandidatProfile />} />
+        <Route path="cv" element={<CandidatCV />} />
+        <Route path="lettres" element={<CandidatCoverLetters />} />
+        <Route path="offres" element={<CandidatJobSearch />} />
+        <Route path="offres/:id" element={<CandidatJobDetails />} />
+        <Route path="recommandations" element={<CandidatRecommendations />} />
+        <Route path="candidatures" element={<CandidatApplications />} />
+        <Route path="candidatures/:id" element={<CandidatApplicationTracking />} />
+        <Route path="entretiens" element={<CandidatInterviews />} />
+        <Route path="entretiens/:id/salle" element={<CandidatInterviewRoom />} />
+        <Route path="messagerie" element={<CandidatMessaging />} />
+        <Route path="favoris" element={<CandidatSavedJobs />} />
+        <Route path="notifications" element={<CandidatNotifications />} />
+        <Route path="parametres" element={<CandidatSettings />} />
       </Route>
 
       {/* ── 404 ── */}

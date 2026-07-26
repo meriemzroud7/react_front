@@ -33,6 +33,19 @@ export async function getUserById(id) {
 export async function updateUser(id, user) {
     return await axios.put(`${apiUrl}/${id}`, user);
 }
+// Modifier son propre profil (page "Mon profil" côté Candidat)
+export async function updateProfile(id, user) {
+    return await axios.put(`${apiUrl}/${id}/profile`, user);
+}
+ 
+// Envoyer / remplacer la photo de profil
+export async function uploadUserPhoto(id, file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await axios.post(`${apiUrl}/${id}/photo`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+}
 
 // Supprimer un utilisateur
 export async function deleteUser(id) {
