@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import '../styles/recruteur-layout.css';
 import { useAuth } from '../context/AuthContext';
+import CoachChatWidget from '../composant/CoachChatWidget';
 
 // Petits utilitaires pour afficher dynamiquement les infos de l'utilisateur connecté
 // (au lieu de valeurs codées en dur). Tolère plusieurs formats de champs possibles
@@ -177,6 +178,8 @@ export default function CandidatLayout() {
           <Outlet />
         </div>
       </div>
+
+      <CoachChatWidget />
     </div>
   );
 }
