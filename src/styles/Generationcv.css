@@ -1,8 +1,8 @@
 /* ===========================================================
    GenerationCv.css
    Styles scopés à la page "Générer mon CV" — préfixe cvgen-
-   Réutilise la palette existante : orange/or (accent), teal
-   (#0f766e, déjà utilisé dans les badges et le PDF), papier crème.
+   Accent unique : or/orange #EAA927 (cohérent avec le bouton
+   "Générer avec l'IA"), papier crème.
    =========================================================== */
 
 .cvgen-layout {
@@ -38,8 +38,8 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: #e6f4f1;
-  color: #0f766e;
+  background: #fdf1dc;
+  color: #b8790f;
   flex-shrink: 0;
 }
 
@@ -77,7 +77,7 @@
 
 .cvgen-langue-btn--active {
   background: #ffffff;
-  color: #0f766e;
+  color: #b8790f;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
 }
 
@@ -166,7 +166,7 @@
 
 .cvgen-preview__ribbon {
   height: 6px;
-  background: linear-gradient(90deg, #0f766e, #14a89c);
+  background: linear-gradient(90deg, #EAA927, #f5c15c);
 }
 
 .cvgen-preview__body {
@@ -189,7 +189,7 @@
 }
 
 .cvgen-preview__poste {
-  color: #0f766e;
+  color: #b8790f;
   font-weight: 600;
   font-size: 0.85rem;
   margin: 0.25rem 0 0;
@@ -212,7 +212,7 @@
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: #0f766e;
+  color: #b8790f;
   font-weight: 700;
   margin: 0 0 0.5rem;
 }
@@ -239,8 +239,8 @@
   font-size: 0.72rem;
   padding: 0.25rem 0.6rem;
   border-radius: 20px;
-  background: #e6f4f1;
-  color: #0f766e;
+  background: #fdf1dc;
+  color: #b8790f;
   font-weight: 600;
 }
 
@@ -298,12 +298,12 @@
 }
 
 .cvgen-preview__dot--live {
-  background: #f5a623;
+  background: #EAA927;
   animation: cvgen-pulse 1.6s ease-in-out infinite;
 }
 
 .cvgen-preview__dot--done {
-  background: #0f766e;
+  background: #EAA927;
 }
 
 @keyframes cvgen-pulse {

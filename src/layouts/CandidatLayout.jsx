@@ -43,7 +43,7 @@ const NAV_ITEMS = [
   { to: '/candidat', icon: <FiGrid />, label: 'Tableau de bord', end: true },
   { to: '/candidat/profil', icon: <FiUser />, label: 'Mon profil' },
   { to: '/candidat/cv', icon: <FiFileText />, label: 'Mon CV' },
-  { to: '/candidat/lettres', icon: <FiMail />, label: 'Lettres de motivation' },
+  { to: '/candidat/lettres', icon: <FiMail />, label: 'Géneration de Cv' },
   { to: '/candidat/offres', icon: <FiSearch />, label: 'Rechercher des offres' },
   { to: '/candidat/recommandations', icon: <FiZap />, label: 'Recommandations IA' },
   { to: '/candidat/candidatures', icon: <FiBriefcase />, label: 'Mes candidatures' },
