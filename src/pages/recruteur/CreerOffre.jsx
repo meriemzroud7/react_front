@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; // ajuste le chemin si besoin
-import { createOffre } from '../../services/apiServiceOffres'; // ajuste le chemin si besoin
+import { createOffre, uploaderLogo } from '../../services/apiServiceOffres'; // ajuste le chemin si besoin
 import {
   FiCpu, FiSend, FiSave, FiX, FiPlus, FiTrash2,
-  FiAlertCircle, FiCheckCircle, FiFileText
+  FiAlertCircle, FiCheckCircle, FiFileText, FiUpload
 } from 'react-icons/fi';
 
 const INIT = {
   titre: '', description: '', missions: '', competences: '',
   niveau: '', experience: '', salaire: '', contrat: '', localisation: '',
   limite: '', obligatoires: [''], souhaitees: [''], poids: {},
+  nomEntreprise: '', logoEntreprise: '',
 };
 
 // Mapping des labels français vers l'enum backend TypeContrat
@@ -30,6 +31,8 @@ export default function CreerOffre() {
   const [published, setPublished] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [uploadEnCours, setUploadEnCours] = useState(false);
 
   const set = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
@@ -41,6 +44,25 @@ export default function CreerOffre() {
 
   const addItem = (key) => set(key, [...form[key], '']);
   const removeItem = (key, idx) => set(key, form[key].filter((_, i) => i !== idx));
+
+  const handleLogoChange = async (e) => {
+    const fichier = e.target.files[0];
+    if (!fichier) return;
+
+    setLogoPreview(URL.createObjectURL(fichier));
+    setUploadEnCours(true);
+    setError('');
+
+    try {
+      const reponse = await uploaderLogo(fichier);
+      set('logoEntreprise', reponse.data.chemin);
+    } catch (err) {
+      setError("Erreur lors de l'upload du logo");
+      setLogoPreview(null);
+    } finally {
+      setUploadEnCours(false);
+    }
+  };
 
   // Construit le payload attendu par le backend (Offre.java) à partir du formulaire
   const buildPayload = () => {
@@ -70,11 +92,14 @@ export default function CreerOffre() {
       statut: 'ACTIVE',
       // NOTE: adapte user?.id -> user?._id selon ce que ton backend renvoie réellement au login
       recruteurId: user?.id || user?._id,
+      nomEntreprise: form.nomEntreprise,
+      logoEntreprise: form.logoEntreprise,
     };
   };
 
   const validateForm = () => {
     if (!form.titre.trim()) return 'Le titre est obligatoire';
+    if (!form.nomEntreprise.trim()) return "Le nom de l'entreprise est obligatoire";
     if (!form.description.trim()) return 'La description est obligatoire';
     if (!form.niveau) return "Le niveau d'études est obligatoire";
     if (!form.experience) return "L'expérience requise est obligatoire";
@@ -169,6 +194,33 @@ export default function CreerOffre() {
             </div>
             <div className="rp-card__body">
               <div className="rp-form">
+                <div className="rp-form-row">
+                  <div className="rp-field">
+                    <label className="rp-label">Nom de l'entreprise <span>*</span></label>
+                    <input className="rp-input" placeholder="ex: Instadeep" value={form.nomEntreprise} onChange={e => set('nomEntreprise', e.target.value)} />
+                  </div>
+                  <div className="rp-field">
+                    <label className="rp-label">Logo de l'entreprise</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      {logoPreview ? (
+                        <img src={logoPreview} alt="Aperçu logo" style={{ width: 44, height: 44, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <div style={{ width: 44, height: 44, borderRadius: 10, background: 'var(--border-light)', flexShrink: 0 }} />
+                      )}
+                      <label htmlFor="upload-logo" className="rp-btn rp-btn--outline rp-btn--sm" style={{ cursor: uploadEnCours ? 'not-allowed' : 'pointer', opacity: uploadEnCours ? 0.6 : 1 }}>
+                        <FiUpload size={13} /> {uploadEnCours ? 'Envoi...' : 'Choisir un logo'}
+                      </label>
+                      <input
+                        id="upload-logo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoChange}
+                        disabled={uploadEnCours}
+                        style={{ display: 'none' }}
+                      />
+                    </div>
+                  </div>
+                </div>
                 <div className="rp-field">
                   <label className="rp-label">Intitulé du poste <span>*</span></label>
                   <input className="rp-input" placeholder="ex: Software Engineer – React/Node.js" value={form.titre} onChange={e => set('titre', e.target.value)} />
@@ -307,10 +359,10 @@ export default function CreerOffre() {
             <div className="rp-card__body">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {[
+                  { label: 'Entreprise', val: form.nomEntreprise || '–' },
                   { label: 'Intitulé', val: form.titre || '–' },
                   { label: 'Contrat', val: form.contrat || '–' },
                   { label: 'Lieu', val: form.localisation || '–' },
-                  { label: 'Expérience', val: form.experience || '–' },
                   { label: 'Date limite', val: form.limite || '–' },
                 ].map((r, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '0.4rem 0', borderBottom: '1px solid var(--border-light)' }}>

@@ -1,24 +1,79 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiMapPin, FiDollarSign, FiClock, FiBookmark } from 'react-icons/fi';
-import MatchScore from '../../composant/MatchScore';
-import { jobs, savedJobIds as initialSaved } from '../../data/candidatMockData';
+import { FiSearch, FiMapPin, FiClock, FiBookmark } from 'react-icons/fi';
+import { getAllOffres, sauvegarderOffre, retirerOffreSauvegardee, getOffresSauvegardees } from '../../services/apiServiceOffres';
+import { useAuth } from '../../context/AuthContext'; // adapte le chemin si différent
 
-const CONTRACT_FILTERS = ['CDI', 'CDD', 'Stage', 'Alternance', 'Télétravail', 'Temps plein', 'Temps partiel'];
+const CONTRACT_FILTERS = [
+  { valeur: 'CDI', label: 'CDI' },
+  { valeur: 'CDD', label: 'CDD' },
+  { valeur: 'STAGE', label: 'Stage' },
+  { valeur: 'FREELANCE', label: 'Freelance' },
+  { valeur: 'ALTERNANCE', label: 'Alternance' },
+];
 
 export default function JobSearch() {
+  const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState([]);
-  const [saved, setSaved] = useState(initialSaved);
+  const [saved, setSaved] = useState([]);
+  const [jobs, setJobs] = useState([]);
+  const [chargement, setChargement] = useState(true);
+
+  useEffect(() => {
+    async function charger() {
+      try {
+        const [reponseOffres, reponseSauvegardees] = await Promise.all([
+          getAllOffres(),
+          user?.id ? getOffresSauvegardees(user.id) : Promise.resolve({ data: [] }),
+        ]);
+        setJobs(reponseOffres.data);
+        setSaved(reponseSauvegardees.data.map((o) => o.id));
+      } catch (err) {
+        console.error('Erreur chargement des offres :', err);
+      } finally {
+        setChargement(false);
+      }
+    }
+    charger();
+  }, [user]);
 
   const toggleFilter = (f) => setActiveFilters((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
-  const toggleSave = (id) => setSaved((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const toggleSave = async (offreId) => {
+    if (!user?.id) return;
+    const estSauvegardee = saved.includes(offreId);
+    try {
+      if (estSauvegardee) {
+        await retirerOffreSauvegardee(user.id, offreId);
+        setSaved((prev) => prev.filter((id) => id !== offreId));
+      } else {
+        await sauvegarderOffre(user.id, offreId);
+        setSaved((prev) => [...prev, offreId]);
+      }
+    } catch (err) {
+      console.error('Erreur sauvegarde offre :', err);
+    }
+  };
+
+  const formaterDate = (dateIso) => {
+    if (!dateIso) return '';
+    const jours = Math.floor((Date.now() - new Date(dateIso).getTime()) / (1000 * 60 * 60 * 24));
+    if (jours === 0) return "Publiée aujourd'hui";
+    if (jours === 1) return 'Publiée hier';
+    return `Publiée il y a ${jours} jours`;
+  };
 
   const results = useMemo(() => jobs.filter((j) => {
-    const matchesQuery = !query || j.role.toLowerCase().includes(query.toLowerCase()) || j.company.toLowerCase().includes(query.toLowerCase()) || j.city.toLowerCase().includes(query.toLowerCase());
-    const matchesFilters = activeFilters.length === 0 || activeFilters.some((f) => j.contract === f);
+    const matchesQuery = !query
+      || j.titre?.toLowerCase().includes(query.toLowerCase())
+      || j.nomEntreprise?.toLowerCase().includes(query.toLowerCase())
+      || j.localisation?.toLowerCase().includes(query.toLowerCase());
+    const matchesFilters = activeFilters.length === 0 || activeFilters.some((f) => j.typeContrat === f);
     return matchesQuery && matchesFilters;
-  }), [query, activeFilters]);
+  }), [jobs, query, activeFilters]);
+
+  if (chargement) return <p style={{ textAlign: 'center', padding: '3rem' }}>Chargement des offres...</p>;
 
   return (
     <div>
@@ -46,12 +101,12 @@ export default function JobSearch() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.25rem 1.1rem' }}>
           {CONTRACT_FILTERS.map((f) => (
             <button
-              key={f}
-              onClick={() => toggleFilter(f)}
-              className={`rp-badge ${activeFilters.includes(f) ? 'rp-badge--blue' : 'rp-badge--gray'}`}
+              key={f.valeur}
+              onClick={() => toggleFilter(f.valeur)}
+              className={`rp-badge ${activeFilters.includes(f.valeur) ? 'rp-badge--blue' : 'rp-badge--gray'}`}
               style={{ cursor: 'pointer', border: 'none' }}
             >
-              {f}
+              {f.label}
             </button>
           ))}
         </div>
@@ -61,10 +116,20 @@ export default function JobSearch() {
         {results.map((job) => (
           <div key={job.id} className="rp-card">
             <div className="rp-card__body" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div className="rp-avatar" style={{ width: 48, height: 48, background: job.color, fontSize: '0.95rem' }}>{job.logo}</div>
+              {job.logoEntreprise ? (
+                <img
+                  src={job.logoEntreprise}
+                  alt={job.nomEntreprise}
+                  style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+                />
+              ) : (
+                <div className="rp-avatar" style={{ width: 48, height: 48, background: '#0f766e', fontSize: '0.95rem' }}>
+                  {job.nomEntreprise?.substring(0, 2).toUpperCase() || '?'}
+                </div>
+              )}
               <div style={{ flex: 1, minWidth: 220 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                  <Link to={`/candidat/offres/${job.id}`} style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--foreground)', textDecoration: 'none' }}>{job.role}</Link>
+                  <Link to={`/candidat/offres/${job.id}`} style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--foreground)', textDecoration: 'none' }}>{job.titre}</Link>
                   <button
                     className="rp-btn rp-btn--outline rp-btn--icon"
                     onClick={() => toggleSave(job.id)}
@@ -73,19 +138,18 @@ export default function JobSearch() {
                     <FiBookmark size={14} />
                   </button>
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{job.company}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{job.nomEntreprise}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '0.5rem', fontSize: '0.76rem', color: 'var(--muted)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiMapPin size={12} />{job.city}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiDollarSign size={12} />{job.salary}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiClock size={12} />{job.published}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiMapPin size={12} />{job.localisation}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiClock size={12} />{formaterDate(job.dateCreation)}</span>
                 </div>
                 <div className="rp-tags" style={{ marginTop: '0.5rem' }}>
-                  <span className="rp-badge rp-badge--blue">{job.contract}</span>
-                  <span className="rp-badge rp-badge--gray">{job.domain}</span>
+                  <span className="rp-badge rp-badge--blue">
+                    {CONTRACT_FILTERS.find((f) => f.valeur === job.typeContrat)?.label || job.typeContrat}
+                  </span>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', borderLeft: '1px solid var(--border-light)', paddingLeft: '1rem' }}>
-                <MatchScore value={job.match} size={56} />
                 <Link to={`/candidat/offres/${job.id}`} className="rp-btn rp-btn--outline rp-btn--sm">Voir l'offre</Link>
               </div>
             </div>
