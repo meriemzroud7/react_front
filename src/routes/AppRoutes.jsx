@@ -36,7 +36,7 @@ import ModifierOffre from '../pages/recruteur/ModifierOffre';
 import CandidatDashboard from '../pages/candidat/Dashboard';
 import CandidatProfile from '../pages/candidat/Profile';
 import CandidatCV from '../pages/candidat/CVManager';
-import CandidatCoverLetters from '../pages/candidat/CoverLetters';
+import CandidatCoverLetters from '../pages/candidat/GenerationCv';
 import CandidatJobSearch from '../pages/candidat/JobSearch';
 import CandidatJobDetails from '../pages/candidat/JobDetails';
 import CandidatRecommendations from '../pages/candidat/Recommendations';
@@ -48,6 +48,7 @@ import CandidatMessaging from '../pages/candidat/Messaging';
 import CandidatSavedJobs from '../pages/candidat/SavedJobs';
 import CandidatNotifications from '../pages/candidat/Notifications';
 import CandidatSettings from '../pages/candidat/Settings';
+import GenerationCv from '../pages/candidat/GenerationCv';
 
 
 /* Espace Administrateur */
@@ -142,6 +143,7 @@ function AppRoutes() {
         <Route path="favoris" element={<CandidatSavedJobs />} />
         <Route path="notifications" element={<CandidatNotifications />} />
         <Route path="parametres" element={<CandidatSettings />} />
+        <Route path="/candidat/generer-cv" element={<GenerationCv />} />
       </Route>
 
       {/* ── 404 ── */}

@@ -1,0 +1,317 @@
+/* ===========================================================
+   GenerationCv.css
+   Styles scopés à la page "Générer mon CV" — préfixe cvgen-
+   Réutilise la palette existante : orange/or (accent), teal
+   (#0f766e, déjà utilisé dans les badges et le PDF), papier crème.
+   =========================================================== */
+
+.cvgen-layout {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .cvgen-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Colonne formulaire ---------- */
+
+.cvgen-section {
+  margin-bottom: 1.5rem;
+}
+
+.cvgen-section__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.cvgen-section__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #e6f4f1;
+  color: #0f766e;
+  flex-shrink: 0;
+}
+
+.cvgen-section__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.cvgen-section__hint {
+  font-size: 0.78rem;
+  color: #8a8f98;
+  margin: 0.15rem 0 0;
+}
+
+.cvgen-langue-group {
+  display: inline-flex;
+  padding: 3px;
+  background: #f1f3f8;
+  border-radius: 10px;
+  gap: 2px;
+}
+
+.cvgen-langue-btn {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #565c68;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cvgen-langue-btn--active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.cvgen-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+@media (max-width: 560px) {
+  .cvgen-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cvgen-skill-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cvgen-skill-row:first-of-type {
+  margin-top: 0;
+}
+
+.cvgen-exp-card {
+  border: 1px solid #e8eaf0;
+  border-radius: 10px;
+  padding: 0.85rem;
+  margin-top: 0.65rem;
+  background: #fbfbfd;
+}
+
+.cvgen-exp-card__remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+}
+
+.cvgen-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+}
+
+.cvgen-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+.cvgen-error {
+  color: #dc2626;
+  font-size: 0.83rem;
+  margin-top: 0.6rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+/* ---------- Colonne aperçu (papier CV) ---------- */
+
+.cvgen-preview-wrap {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.cvgen-preview {
+  background: #fffdf8;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px -12px rgba(15, 23, 42, 0.25), 0 1px 3px rgba(15, 23, 42, 0.08);
+  border: 1px solid #f0ede4;
+}
+
+.cvgen-preview[dir='rtl'] {
+  text-align: right;
+}
+
+.cvgen-preview__ribbon {
+  height: 6px;
+  background: linear-gradient(90deg, #0f766e, #14a89c);
+}
+
+.cvgen-preview__body {
+  padding: 1.75rem 1.85rem 1.5rem;
+}
+
+.cvgen-preview__name {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.cvgen-preview__name--placeholder {
+  color: #c7c9d1;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.cvgen-preview__poste {
+  color: #0f766e;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0;
+}
+
+.cvgen-preview__contact {
+  color: #9a9fa8;
+  font-size: 0.72rem;
+  margin: 0.35rem 0 0;
+  letter-spacing: 0.02em;
+}
+
+.cvgen-preview__divider {
+  height: 1px;
+  background: #eeece3;
+  margin: 1.1rem 0;
+}
+
+.cvgen-preview__section-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #0f766e;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.cvgen-preview__resume {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #3a3d44;
+  margin: 0;
+}
+
+.cvgen-preview__resume--placeholder {
+  color: #c7c9d1;
+  font-style: italic;
+}
+
+.cvgen-preview__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.cvgen-preview__skill {
+  font-size: 0.72rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  background: #e6f4f1;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.cvgen-preview__skill--muted {
+  background: #f2f2f5;
+  color: #9a9fa8;
+}
+
+.cvgen-preview__exp-item {
+  margin-bottom: 0.55rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.cvgen-preview__exp-item strong {
+  color: #1a1a1a;
+}
+
+.cvgen-preview__exp-meta {
+  display: block;
+  color: #9a9fa8;
+  font-size: 0.72rem;
+  margin-top: 0.1rem;
+}
+
+.cvgen-preview__empty {
+  color: #c7c9d1;
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+.cvgen-preview__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.85rem;
+  background: #f7f6f1;
+  border-top: 1px solid #eeece3;
+}
+
+.cvgen-preview__status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: #9a9fa8;
+  font-weight: 600;
+}
+
+.cvgen-preview__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c7c9d1;
+}
+
+.cvgen-preview__dot--live {
+  background: #f5a623;
+  animation: cvgen-pulse 1.6s ease-in-out infinite;
+}
+
+.cvgen-preview__dot--done {
+  background: #0f766e;
+}
+
+@keyframes cvgen-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.cvgen-preview__download {
+  font-size: 0.78rem;
+  padding: 0.4rem 0.75rem;
+}
