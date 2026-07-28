@@ -5,6 +5,42 @@ import MatchScore from '../../composant/MatchScore';
 import { getOffreById, sauvegarderOffre, getMatchScore } from '../../services/apiServiceOffres';
 import { useAuth } from '../../context/AuthContext'; // adapte le chemin si différent
 
+const API_BASE_URL = 'http://localhost:8080';
+
+// Sépare le texte "description" concaténé (Description + Missions + Niveau + Expérience + Salaire)
+// en sous-parties, sans toucher au backend.
+function parseOffreDescription(texte) {
+  const resultat = { description: '', missions: '', niveauEtudes: '', experience: '', salaire: '' };
+  if (!texte) return resultat;
+
+  const marqueurs = [
+    { cle: 'missions', label: '\n\nMissions:\n' },
+    { cle: 'niveauEtudes', label: "\n\nNiveau d'études: " },
+    { cle: 'experience', label: '\nExpérience requise: ' },
+    { cle: 'salaire', label: '\nSalaire: ' },
+  ];
+
+  const positions = marqueurs
+    .map((m) => ({ ...m, index: texte.indexOf(m.label) }))
+    .filter((m) => m.index !== -1)
+    .sort((a, b) => a.index - b.index);
+
+  if (positions.length === 0) {
+    resultat.description = texte.trim();
+    return resultat;
+  }
+
+  resultat.description = texte.substring(0, positions[0].index).trim();
+
+  positions.forEach((m, i) => {
+    const debut = m.index + m.label.length;
+    const fin = i + 1 < positions.length ? positions[i + 1].index : texte.length;
+    resultat[m.cle] = texte.substring(debut, fin).trim();
+  });
+
+  return resultat;
+}
+
 export default function JobDetails() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -48,6 +84,8 @@ export default function JobDetails() {
 
   if (!job) return <p style={{ textAlign: 'center', padding: '3rem' }}>Chargement...</p>;
 
+  const parsed = parseOffreDescription(job.description);
+
   return (
     <div>
       <Link to="/candidat/offres" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.85rem', color: 'var(--primary)', textDecoration: 'none', marginBottom: '1rem' }}>
@@ -60,7 +98,7 @@ export default function JobDetails() {
             <div className="rp-card__body" style={{ display: 'flex', gap: '1rem' }}>
               {job.logoEntreprise ? (
                 <img
-                  src={job.logoEntreprise}
+                  src={`${API_BASE_URL}${job.logoEntreprise}`}
                   alt={job.nomEntreprise}
                   style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
                 />
@@ -86,18 +124,56 @@ export default function JobDetails() {
           <div className="rp-card">
             <div className="rp-card__body">
               <h3 className="rp-section-title" style={{ marginBottom: '0.5rem' }}>Description</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: 1.6 }}>{job.description}</p>
-
-              {job.competencesRequises?.length > 0 && (
-                <>
-                  <h3 className="rp-section-title" style={{ margin: '1.25rem 0 0.5rem' }}>Compétences requises</h3>
-                  <div className="rp-tags">
-                    {job.competencesRequises.map((c) => <span key={c} className="rp-tag">{c}</span>)}
-                  </div>
-                </>
-              )}
+              <p style={{ fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: 1.6 }}>{parsed.description}</p>
             </div>
           </div>
+
+          {parsed.missions && (
+            <div className="rp-card">
+              <div className="rp-card__body">
+                <h3 className="rp-section-title" style={{ marginBottom: '0.5rem' }}>Missions</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--foreground)', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{parsed.missions}</p>
+              </div>
+            </div>
+          )}
+
+          {(parsed.niveauEtudes || parsed.experience || parsed.salaire) && (
+            <div className="rp-card">
+              <div className="rp-card__body">
+                <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                  {parsed.niveauEtudes && (
+                    <div>
+                      <h3 className="rp-section-title" style={{ marginBottom: '0.3rem' }}>Niveau d'études</h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--foreground)' }}>{parsed.niveauEtudes}</p>
+                    </div>
+                  )}
+                  {parsed.experience && (
+                    <div>
+                      <h3 className="rp-section-title" style={{ marginBottom: '0.3rem' }}>Expérience requise</h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--foreground)' }}>{parsed.experience}</p>
+                    </div>
+                  )}
+                  {parsed.salaire && (
+                    <div>
+                      <h3 className="rp-section-title" style={{ marginBottom: '0.3rem' }}>Salaire</h3>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--foreground)' }}>{parsed.salaire}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {job.competencesRequises?.length > 0 && (
+            <div className="rp-card">
+              <div className="rp-card__body">
+                <h3 className="rp-section-title" style={{ marginBottom: '0.5rem' }}>Compétences requises</h3>
+                <div className="rp-tags">
+                  {job.competencesRequises.map((c) => <span key={c} className="rp-tag">{c}</span>)}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

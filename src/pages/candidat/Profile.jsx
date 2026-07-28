@@ -29,6 +29,7 @@ export default function Profile() {
   const [saved, setSaved] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState('');
+  const [nouvelleCompetence, setNouvelleCompetence] = useState('');
 
   // Charge le vrai profil depuis le backend au montage de la page
   useEffect(() => {
@@ -78,6 +79,33 @@ export default function Profile() {
     } finally {
       setUploadingPhoto(false);
       e.target.value = '';
+    }
+  };
+
+  const ajouterCompetence = () => {
+    const valeur = nouvelleCompetence.trim();
+    if (!valeur) return;
+    setForm(prev => {
+      const existantes = prev.competences || [];
+      if (existantes.some(c => c.toLowerCase() === valeur.toLowerCase())) return prev;
+      return { ...prev, competences: [...existantes, valeur] };
+    });
+    setNouvelleCompetence('');
+    setSaved(false);
+  };
+
+  const supprimerCompetence = (competence) => {
+    setForm(prev => ({
+      ...prev,
+      competences: (prev.competences || []).filter(c => c !== competence),
+    }));
+    setSaved(false);
+  };
+
+  const handleCompetenceKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      ajouterCompetence();
     }
   };
 
@@ -176,6 +204,48 @@ export default function Profile() {
               <Field label="Salaire souhaité" name="salaireSouhaite" value={form.salaireSouhaite} onChange={handleChange} />
             </div>
             <Field label="Mobilité géographique" name="mobiliteGeographique" value={form.mobiliteGeographique} onChange={handleChange} />
+          </div>
+        </div>
+
+        <div className="rp-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="rp-card__header"><span className="rp-card__title">Compétences</span></div>
+          <div className="rp-card__body">
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 0, marginBottom: '0.85rem' }}>
+              Ces compétences sont utilisées par l'IA pour calculer votre score de compatibilité avec les offres.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.85rem' }}>
+              <input
+                className="rp-input"
+                placeholder="ex: Spring Boot"
+                value={nouvelleCompetence}
+                onChange={(e) => setNouvelleCompetence(e.target.value)}
+                onKeyDown={handleCompetenceKeyDown}
+              />
+              <button type="button" className="rp-btn rp-btn--outline" onClick={ajouterCompetence}>
+                Ajouter
+              </button>
+            </div>
+            <div className="rp-tags">
+              {(form.competences || []).length > 0 ? (
+                form.competences.map((c) => (
+                  <span key={c} className="rp-tag rp-tag--ok" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    {c}
+                    <button
+                      type="button"
+                      onClick={() => supprimerCompetence(c)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, lineHeight: 1, padding: 0 }}
+                      aria-label={`Retirer ${c}`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span style={{ fontSize: '0.78rem', color: 'var(--muted-light)' }}>
+                  Aucune compétence renseignée. Ajoutez-en ou importez un CV pour les détecter automatiquement.
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

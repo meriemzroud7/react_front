@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FiSearch, FiMapPin, FiClock, FiBookmark } from 'react-icons/fi';
-import { getAllOffres, sauvegarderOffre, retirerOffreSauvegardee, getOffresSauvegardees } from '../../services/apiServiceOffres';
+import { getAllOffres, sauvegarderOffre, retirerOffreSauvegardee, getOffresSauvegardees ,getMatchScore } from '../../services/apiServiceOffres';
 import { useAuth } from '../../context/AuthContext'; // adapte le chemin si différent
-
 const CONTRACT_FILTERS = [
   { valeur: 'CDI', label: 'CDI' },
   { valeur: 'CDD', label: 'CDD' },
@@ -12,31 +11,67 @@ const CONTRACT_FILTERS = [
   { valeur: 'ALTERNANCE', label: 'Alternance' },
 ];
 
+const API_BASE_URL = 'http://localhost:8080';
+
+const MatchScore = ({ value, size = 56 }) => (
+  <div
+    style={{
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      border: '2px solid var(--accent)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: size * 0.28,
+      fontWeight: 700,
+      color: 'var(--accent-dark)',
+    }}
+    title={`Score de correspondance: ${value}%`}
+  >
+    {value}%
+  </div>
+);
+
 export default function JobSearch() {
+  
   const { user } = useAuth();
   const [query, setQuery] = useState('');
   const [activeFilters, setActiveFilters] = useState([]);
   const [saved, setSaved] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [chargement, setChargement] = useState(true);
+  const [scores, setScores] = useState({});
+useEffect(() => {
+  async function charger() {
+    try {
+      const [reponseOffres, reponseSauvegardees] = await Promise.all([
+        getAllOffres(),
+        user?.id ? getOffresSauvegardees(user.id) : Promise.resolve({ data: [] }),
+      ]);
+      setJobs(reponseOffres.data);
+      setSaved(reponseSauvegardees.data.map((o) => o.id));
 
-  useEffect(() => {
-    async function charger() {
-      try {
-        const [reponseOffres, reponseSauvegardees] = await Promise.all([
-          getAllOffres(),
-          user?.id ? getOffresSauvegardees(user.id) : Promise.resolve({ data: [] }),
-        ]);
-        setJobs(reponseOffres.data);
-        setSaved(reponseSauvegardees.data.map((o) => o.id));
-      } catch (err) {
-        console.error('Erreur chargement des offres :', err);
-      } finally {
-        setChargement(false);
+      if (user?.id) {
+        const resultats = await Promise.allSettled(
+          reponseOffres.data.map((job) => getMatchScore(user.id, job.id))
+        );
+        const scoresMap = {};
+        resultats.forEach((res, i) => {
+          if (res.status === 'fulfilled') {
+            scoresMap[reponseOffres.data[i].id] = res.value.data.matchScore;
+          }
+        });
+        setScores(scoresMap);
       }
+    } catch (err) {
+      console.error('Erreur chargement des offres :', err);
+    } finally {
+      setChargement(false);
     }
-    charger();
-  }, [user]);
+  }
+  charger();
+}, [user]);
 
   const toggleFilter = (f) => setActiveFilters((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
 
@@ -118,7 +153,7 @@ export default function JobSearch() {
             <div className="rp-card__body" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               {job.logoEntreprise ? (
                 <img
-                  src={job.logoEntreprise}
+                  src={`${API_BASE_URL}${job.logoEntreprise}`}
                   alt={job.nomEntreprise}
                   style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
                 />
@@ -149,7 +184,10 @@ export default function JobSearch() {
                   </span>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', borderLeft: '1px solid var(--border-light)', paddingLeft: '1rem' }}>
+             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', borderLeft: '1px solid var(--border-light)', paddingLeft: '1rem' }}>
+                {scores[job.id] !== undefined && (
+                  <MatchScore value={scores[job.id]} size={56} />
+                )}
                 <Link to={`/candidat/offres/${job.id}`} className="rp-btn rp-btn--outline rp-btn--sm">Voir l'offre</Link>
               </div>
             </div>
