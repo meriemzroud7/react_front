@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiMapPin, FiCalendar, FiBookmark, FiSend, FiMessageCircle, FiFlag, FiArrowLeft } from 'react-icons/fi';
+import { FiMapPin, FiCalendar, FiBookmark, FiSend, FiMessageCircle, FiFlag, FiArrowLeft, FiCheckCircle } from 'react-icons/fi';
 import MatchScore from '../../composant/MatchScore';
+import PostulerModal from '../../composant/PostulerModal';
 import { getOffreById, sauvegarderOffre, getMatchScore } from '../../services/apiServiceOffres';
+import CandidatureService from '../../services/apiServiceCandidature';
 import { useAuth } from '../../context/AuthContext'; // adapte le chemin si différent
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -47,6 +49,9 @@ export default function JobDetails() {
   const [job, setJob] = useState(null);
   const [matching, setMatching] = useState(null);
   const [chargementMatching, setChargementMatching] = useState(true);
+  const [modalOuvert, setModalOuvert] = useState(false);
+  const [dejaPostule, setDejaPostule] = useState(false);
+  const [candidatureEnvoyee, setCandidatureEnvoyee] = useState(false);
 
   useEffect(() => {
     async function charger() {
@@ -58,6 +63,9 @@ export default function JobDetails() {
           setChargementMatching(true);
           const reponseMatching = await getMatchScore(user.id, id);
           setMatching(reponseMatching.data);
+
+          const candidatures = await CandidatureService.getByCandidat(user.id);
+          setDejaPostule(candidatures.some((c) => c.offreId === id));
         }
       } catch (err) {
         console.error('Erreur chargement offre / matching :', err);
@@ -189,7 +197,11 @@ export default function JobDetails() {
                   <div style={{ textAlign: 'left', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div>
                       <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--success)', marginBottom: 6 }}>Compétences correspondantes</div>
-                      <div className="rp-tags">{matching.matchingSkills.map((s) => <span key={s} className="rp-tag rp-tag--ok">{s}</span>)}</div>
+                      {matching.matchingSkills.length > 0 ? (
+                        <div className="rp-tags">{matching.matchingSkills.map((s) => <span key={s} className="rp-tag rp-tag--ok">{s}</span>)}</div>
+                      ) : (
+                        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: 0 }}>Aucune compétence commune trouvée.</p>
+                      )}
                     </div>
                     {matching.missingSkills.length > 0 && (
                       <div>
@@ -211,7 +223,15 @@ export default function JobDetails() {
 
           <div className="rp-card">
             <div className="rp-card__body" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <button className="rp-btn rp-btn--primary" style={{ justifyContent: 'center' }}><FiSend /> Postuler à cette offre</button>
+              {dejaPostule || candidatureEnvoyee ? (
+                <button className="rp-btn rp-btn--outline" style={{ justifyContent: 'center', color: 'var(--success)', borderColor: 'var(--success)' }} disabled>
+                  <FiCheckCircle /> Candidature déjà envoyée
+                </button>
+              ) : (
+                <button className="rp-btn rp-btn--primary" style={{ justifyContent: 'center' }} onClick={() => setModalOuvert(true)}>
+                  <FiSend /> Postuler à cette offre
+                </button>
+              )}
               <button className="rp-btn rp-btn--outline" style={{ justifyContent: 'center' }} onClick={sauvegarder}><FiBookmark /> Sauvegarder</button>
               <button className="rp-btn rp-btn--outline" style={{ justifyContent: 'center' }}><FiMessageCircle /> Contacter le recruteur</button>
               <button className="rp-btn" style={{ justifyContent: 'center', background: 'none', color: 'var(--muted)', fontSize: '0.78rem' }}><FiFlag size={13} /> Signaler cette offre</button>
@@ -219,6 +239,18 @@ export default function JobDetails() {
           </div>
         </div>
       </div>
+
+      {modalOuvert && (
+        <PostulerModal
+          offreId={id}
+          candidatId={user?.id}
+          onClose={() => setModalOuvert(false)}
+          onSuccess={() => {
+            setModalOuvert(false);
+            setCandidatureEnvoyee(true);
+          }}
+        />
+      )}
     </div>
   );
 }

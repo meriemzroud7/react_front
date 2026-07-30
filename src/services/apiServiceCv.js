@@ -34,6 +34,11 @@ export async function downloadCv(id, fileName) {
     window.URL.revokeObjectURL(url);
 }
 
+// Télécharger le fichier PDF en tant que blob, sans déclencher de téléchargement navigateur
+// (utilisé en interne, ex: pour rattacher un CV existant à une nouvelle candidature)
+export async function downloadCvBlob(id) {
+    return await axios.get(`${apiUrl}/${id}/download`, { responseType: 'blob' });
+}
 // Définir un CV comme CV par défaut
 export async function setDefaultCv(userId, cvId) {
     return await axios.put(`${apiUrl}/${userId}/default/${cvId}`);
