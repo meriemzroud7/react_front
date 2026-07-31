@@ -53,6 +53,7 @@ const NAV_ITEMS = [
   { to: '/candidat/notifications', icon: <FiBell />, label: 'Notifications' },
   { to: '/candidat/parametres', icon: <FiSettings />, label: 'Paramètres' },
   { to: '/candidat/generer-cv', icon: <FiFileText />, label: 'Générer mon CV' }
+  
 ];
 
 export default function CandidatLayout() {

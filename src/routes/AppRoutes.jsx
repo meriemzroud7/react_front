@@ -40,7 +40,6 @@ import CandidatCoverLetters from '../pages/candidat/GenerationCv';
 import CandidatJobSearch from '../pages/candidat/JobSearch';
 import CandidatJobDetails from '../pages/candidat/JobDetails';
 import CandidatRecommendations from '../pages/candidat/Recommendations';
-import CandidatApplicationTracking from '../pages/candidat/ApplicationTracking';
 import CandidatInterviews from '../pages/candidat/Interviews';
 import CandidatInterviewRoom from '../pages/candidat/InterviewRoom';
 import CandidatMessaging from '../pages/candidat/Messaging';
@@ -49,6 +48,7 @@ import CandidatNotifications from '../pages/candidat/Notifications';
 import CandidatSettings from '../pages/candidat/Settings';
 import GenerationCv from '../pages/candidat/GenerationCv';
 import ListCandidature from '../pages/candidat/listCandidature';
+import VerifCandidature from '../pages/candidat/verifcandidature';
 
 
 /* Espace Administrateur */
@@ -135,7 +135,8 @@ function AppRoutes() {
         <Route path="offres" element={<CandidatJobSearch />} />
         <Route path="offres/:id" element={<CandidatJobDetails />} />
         <Route path="recommandations" element={<CandidatRecommendations />} />
-        <Route path="candidatures" element={<ListCandidature />} />        <Route path="candidatures/:id" element={<CandidatApplicationTracking />} />
+        <Route path="candidatures" element={<ListCandidature />} />    
+          <Route path="candidatures/:id" element={<VerifCandidature />} />
         <Route path="entretiens" element={<CandidatInterviews />} />
         <Route path="entretiens/:id/salle" element={<CandidatInterviewRoom />} />
         <Route path="messagerie" element={<CandidatMessaging />} />
