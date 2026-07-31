@@ -9,6 +9,7 @@ import {
   modifierEntretien, demarrerEntretien, changerStatut,
 } from '../../services/apiServiceEntretien';
 import CandidatureService from '../../services/apiServiceCandidature';
+import { getOffreById } from '../../services/apiServiceOffres';
 import '../../styles/entretien-form.css';
 
 const TABS = [
@@ -58,7 +59,7 @@ function formatDateLabel(dateStr) {
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-const EMPTY_FORM = { date: '', heure: '', type: 'EN_LIGNE', intervieweurs: '' };
+const EMPTY_FORM = { date: '', heure: '', type: 'EN_LIGNE', intervieweurs: '', poste: '' };
 
 export default function Entretiens() {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ export default function Entretiens() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [candidatures, setCandidatures] = useState([]);
   const [usersMap, setUsersMap] = useState({});
+  const [offresMap, setOffresMap] = useState({}); // offreId -> { titre }
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -111,13 +113,28 @@ export default function Entretiens() {
       setCandidatures(list);
       const users = await CandidatureService.getUsersByIds(list.map((c) => c.candidatId));
       setUsersMap(users);
+
+      // Le titre du poste vit sur l'offre, pas sur la candidature -> on le résout ici
+      const uniqueOffreIds = [...new Set(list.map((c) => c.offreId).filter(Boolean))];
+      const offreResults = await Promise.allSettled(uniqueOffreIds.map((id) => getOffreById(id)));
+      const offres = {};
+      offreResults.forEach((res, i) => {
+        if (res.status === 'fulfilled') offres[uniqueOffreIds[i]] = res.value.data;
+      });
+      setOffresMap(offres);
     } catch (err) {
       console.error(err);
     }
   }
 
+  function getPosteForCandidature(c) {
+    return offresMap[c?.offreId]?.titre || '';
+  }
+
   function getCandidatureLabel(c) {
-    return getUserDisplayName(usersMap[c.candidatId]);
+    const nom = getUserDisplayName(usersMap[c.candidatId]);
+    const poste = getPosteForCandidature(c);
+    return poste ? `${nom} — ${poste}` : nom;
   }
 
   function openCreateForm() {
@@ -135,8 +152,18 @@ export default function Entretiens() {
       heure: entretien.heure || '',
       type: entretien.type || 'EN_LIGNE',
       intervieweurs: (entretien.intervieweurs || []).join(', '),
+      poste: entretien.poste || '',
     });
     setShowForm(true);
+  }
+
+  // Sélection d'un candidat en mode création -> pré-remplit le poste depuis son offre
+  function handleSelectCandidature(candidatureId) {
+    setSelectedCandidatureId(candidatureId);
+    const candidature = candidatures.find((c) => (c.id || c._id) === candidatureId);
+    if (candidature) {
+      setForm((prev) => ({ ...prev, poste: getPosteForCandidature(candidature) }));
+    }
   }
 
   function closeForm() {
@@ -153,11 +180,20 @@ export default function Entretiens() {
 
     try {
       if (editingId) {
+        const candidature = candidatures.find((c) => (c.id || c._id) === selectedCandidatureId);
+
         await modifierEntretien(editingId, {
           date: form.date,
           heure: form.heure,
           type: form.type,
           intervieweurs,
+          poste: form.poste,
+          // ré-envoyés seulement si un candidat a été choisi/changé dans le formulaire
+          ...(candidature && {
+            candidatureId: candidature.id || candidature._id,
+            candidatId: candidature.candidatId,
+            candidatNom: getUserDisplayName(usersMap[candidature.candidatId]),
+          }),
         });
       } else {
         const candidature = candidatures.find((c) => (c.id || c._id) === selectedCandidatureId);
@@ -171,7 +207,7 @@ export default function Entretiens() {
           candidatureId: candidature.id || candidature._id,
           candidatId: candidature.candidatId,
           candidatNom,
-          poste: candidature.poste || '', // à ajuster une fois OffreService branché
+          poste: form.poste || getPosteForCandidature(candidature),
           date: form.date,
           heure: form.heure,
           type: form.type,
@@ -279,8 +315,8 @@ export default function Entretiens() {
                     <tr key={e.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                          <div className="rp-avatar" style={{ width: 38, height: 38, background: getAvatarColor(e.candidatNom), fontSize: '0.78rem', flexShrink: 0 }}>
-                            {getInitials(e.candidatNom)}
+                          <div className="rp-avatar" style={{ width: 38, height: 38, background: getAvatarColor(e.candidatNom || ''), fontSize: '0.78rem', flexShrink: 0 }}>
+                            {getInitials(e.candidatNom || '')}
                           </div>
                           <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{e.candidatNom}</div>
                         </div>
@@ -341,13 +377,18 @@ export default function Entretiens() {
 
             <div className="ef-field">
               <label>Candidat</label>
-              <select required disabled={!!editingId} value={selectedCandidatureId} onChange={(e) => setSelectedCandidatureId(e.target.value)}>
+              <select required value={selectedCandidatureId} onChange={(e) => handleSelectCandidature(e.target.value)}>
                 <option value="" disabled>Sélectionner un candidat</option>
                 {candidatures.map((c) => {
                   const id = c.id || c._id;
                   return <option key={id} value={id}>{getCandidatureLabel(c)}</option>;
                 })}
               </select>
+            </div>
+
+            <div className="ef-field">
+              <label>Poste</label>
+              <input required placeholder="Ex: Software Engineer" value={form.poste} onChange={(e) => setForm({ ...form, poste: e.target.value })} />
             </div>
 
             <div className="ef-field-row">

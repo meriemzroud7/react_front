@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiMic, FiMicOff, FiVideo, FiVideoOff, FiPhoneOff } from 'react-icons/fi';
+import { FiMic, FiMicOff, FiVideo, FiVideoOff, FiPhoneOff, FiBriefcase } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getEntretienById } from '../../services/apiServiceEntretien';
 import { useWebRTCInterview } from '../../hooks/useWebRTCInterview';
 import { useEffect } from 'react';
+import '../../styles/salle-entretien.css';
 
 export default function InterviewRoom() {
   const { id } = useParams();
@@ -29,44 +30,43 @@ export default function InterviewRoom() {
   if (!entretien) return <p style={{ padding: '2rem' }}>Chargement de la salle d'entretien...</p>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f172a' }}>
-      <div style={{ padding: '1rem', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
-        <div>
-          <strong>{entretien.poste}</strong>
-          <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-            {connected ? 'Connecté' : 'En attente du recruteur...'}
+    <div className="se-video-col" style={{ height: '100vh' }}>
+      <div className="se-video-header">
+        <div className="se-candidate-info">
+          <div className="se-avatar"><FiBriefcase size={16} /></div>
+          <div style={{ minWidth: 0 }}>
+            <div className="se-candidate-name">{entretien.poste}</div>
+            <div className="se-candidate-poste">Entretien avec le recruteur</div>
           </div>
+        </div>
+        <div className={`se-status ${connected ? 'se-status--connected' : 'se-status--waiting'}`}>
+          <span className="se-status__dot" />
+          {connected ? 'Connecté' : 'En attente du recruteur...'}
         </div>
       </div>
 
-      <div style={{ flex: 1, position: 'relative' }}>
-        <video ref={remoteVideoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', background: '#1e293b' }} />
+      <div className="se-video-stage">
+        <video ref={remoteVideoRef} autoPlay playsInline className="se-video-remote" />
         {!connected && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-            En attente de l'autre participant...
+          <div className="se-video-waiting">
+            <div className="se-video-waiting__icon"><FiBriefcase /></div>
+            <div className="se-video-waiting__text">En attente du recruteur...</div>
           </div>
         )}
-        <video ref={localVideoRef} autoPlay playsInline muted style={{
-          position: 'absolute', bottom: 20, right: 20, width: 200, height: 150,
-          borderRadius: 12, objectFit: 'cover', border: '2px solid white',
-        }} />
+        <video ref={localVideoRef} autoPlay playsInline muted className="se-video-local" />
       </div>
 
-      <div style={{ padding: '1.25rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-        <button onClick={toggleMic} style={controlBtnStyle(micOn)}>{micOn ? <FiMic /> : <FiMicOff />}</button>
-        <button onClick={toggleCam} style={controlBtnStyle(camOn)}>{camOn ? <FiVideo /> : <FiVideoOff />}</button>
-        <button onClick={handleLeave} style={{ ...controlBtnStyle(true), background: '#dc2626' }}>
+      <div className="se-controls">
+        <button onClick={toggleMic} className={`se-control-btn ${!micOn ? 'se-control-btn--off' : ''}`} title={micOn ? 'Couper le micro' : 'Activer le micro'}>
+          {micOn ? <FiMic /> : <FiMicOff />}
+        </button>
+        <button onClick={toggleCam} className={`se-control-btn ${!camOn ? 'se-control-btn--off' : ''}`} title={camOn ? 'Couper la caméra' : 'Activer la caméra'}>
+          {camOn ? <FiVideo /> : <FiVideoOff />}
+        </button>
+        <button onClick={handleLeave} className="se-control-btn se-control-btn--danger" title="Quitter l'entretien">
           <FiPhoneOff />
         </button>
       </div>
     </div>
   );
-}
-
-function controlBtnStyle(active) {
-  return {
-    width: 52, height: 52, borderRadius: '50%', border: 'none', cursor: 'pointer',
-    background: active ? '#334155' : '#64748b', color: 'white',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
-  };
 }
