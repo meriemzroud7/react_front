@@ -1,70 +1,72 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { FiMic, FiMicOff, FiVideo, FiVideoOff, FiMonitor, FiMessageSquare, FiPhoneOff } from 'react-icons/fi';
-import { upcomingInterviews } from '../../data/candidatMockData';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FiMic, FiMicOff, FiVideo, FiVideoOff, FiPhoneOff } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import { getEntretienById } from '../../services/apiServiceEntretien';
+import { useWebRTCInterview } from '../../hooks/useWebRTCInterview';
+import { useEffect } from 'react';
 
 export default function InterviewRoom() {
   const { id } = useParams();
-  const it = upcomingInterviews.find((i) => String(i.id) === id) || upcomingInterviews[0];
-  const [micOn, setMicOn] = useState(true);
-  const [camOn, setCamOn] = useState(true);
-  const [ended, setEnded] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = user?.id;
+  const userName = user?.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : 'Utilisateur';
 
-  if (ended) {
-    return (
-      <div>
-        <div className="rp-header">
-          <h1 className="rp-title">Entretien terminé</h1>
-          <p className="rp-subtitle">{it.company} — {it.role}</p>
-        </div>
-        <div className="rp-card" style={{ maxWidth: 460, margin: '2rem auto', textAlign: 'center' }}>
-          <div className="rp-card__body">
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--foreground)' }}>Merci pour votre participation !</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-              Votre présence a bien été confirmée. Le recruteur vous communiquera sa décision prochainement via la messagerie.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+  const [entretien, setEntretien] = useState(null);
+
+  useEffect(() => {
+    getEntretienById(id).then((res) => setEntretien(res.data)).catch(console.error);
+  }, [id]);
+
+  const { localVideoRef, remoteVideoRef, connected, micOn, camOn, toggleMic, toggleCam } =
+    useWebRTCInterview({ salleId: entretien?.salleId, userId, userName });
+
+  function handleLeave() {
+    navigate('/candidat/entretiens');
   }
 
+  if (!entretien) return <p style={{ padding: '2rem' }}>Chargement de la salle d'entretien...</p>;
+
   return (
-    <div>
-      <div className="rp-header">
-        <h1 className="rp-title">Salle d'entretien en ligne</h1>
-        <p className="rp-subtitle">{it.company} — {it.role} · {it.date} à {it.time}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f172a' }}>
+      <div style={{ padding: '1rem', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
+        <div>
+          <strong>{entretien.poste}</strong>
+          <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+            {connected ? 'Connecté' : 'En attente du recruteur...'}
+          </div>
+        </div>
       </div>
 
-      <div style={{ background: '#0f1f3d', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '0.75rem', padding: '1rem' }}>
-          <div style={{ aspectRatio: '16/9', background: 'rgba(255,255,255,0.06)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem' }}>{camOn ? 'Votre caméra' : 'Caméra désactivée'}</span>
-            <span style={{ position: 'absolute', top: 10, left: 10, fontSize: '0.7rem', color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '2px 8px', borderRadius: 100 }}>00:12:34</span>
+      <div style={{ flex: 1, position: 'relative' }}>
+        <video ref={remoteVideoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', background: '#1e293b' }} />
+        {!connected && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+            En attente de l'autre participant...
           </div>
-          <div style={{ aspectRatio: '16/9', background: 'rgba(255,255,255,0.06)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem' }}>Recruteur</span>
-          </div>
-        </div>
+        )}
+        <video ref={localVideoRef} autoPlay playsInline muted style={{
+          position: 'absolute', bottom: 20, right: 20, width: 200, height: 150,
+          borderRadius: 12, objectFit: 'cover', border: '2px solid white',
+        }} />
+      </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', paddingBottom: '1.5rem' }}>
-          <button onClick={() => setMicOn((v) => !v)} className="rp-btn rp-btn--icon" style={{ width: 44, height: 44, borderRadius: '50%', background: micOn ? 'rgba(255,255,255,0.1)' : 'var(--danger)', color: '#fff' }}>
-            {micOn ? <FiMic size={18} /> : <FiMicOff size={18} />}
-          </button>
-          <button onClick={() => setCamOn((v) => !v)} className="rp-btn rp-btn--icon" style={{ width: 44, height: 44, borderRadius: '50%', background: camOn ? 'rgba(255,255,255,0.1)' : 'var(--danger)', color: '#fff' }}>
-            {camOn ? <FiVideo size={18} /> : <FiVideoOff size={18} />}
-          </button>
-          <button className="rp-btn rp-btn--icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: '#fff' }}>
-            <FiMonitor size={18} />
-          </button>
-          <button className="rp-btn rp-btn--icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: '#fff' }}>
-            <FiMessageSquare size={18} />
-          </button>
-          <button onClick={() => setEnded(true)} className="rp-btn rp-btn--icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--danger)', color: '#fff' }}>
-            <FiPhoneOff size={18} />
-          </button>
-        </div>
+      <div style={{ padding: '1.25rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+        <button onClick={toggleMic} style={controlBtnStyle(micOn)}>{micOn ? <FiMic /> : <FiMicOff />}</button>
+        <button onClick={toggleCam} style={controlBtnStyle(camOn)}>{camOn ? <FiVideo /> : <FiVideoOff />}</button>
+        <button onClick={handleLeave} style={{ ...controlBtnStyle(true), background: '#dc2626' }}>
+          <FiPhoneOff />
+        </button>
       </div>
     </div>
   );
+}
+
+function controlBtnStyle(active) {
+  return {
+    width: 52, height: 52, borderRadius: '50%', border: 'none', cursor: 'pointer',
+    background: active ? '#334155' : '#64748b', color: 'white',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
+  };
 }

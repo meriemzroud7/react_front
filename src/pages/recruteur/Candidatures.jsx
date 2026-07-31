@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   FiSearch, FiDownload, FiCalendar, FiCheck, FiX,
   FiUser, FiMail, FiPhone, FiFilter, FiLayers, FiLoader, FiAlertCircle
@@ -13,7 +13,6 @@ const STATUT_CONFIG = {
   ENTRETIEN: { label: 'Entretien', className: 'blue' },
   REFUSE: { label: 'Refusé', className: 'red' },
 };
-
 const AVATAR_COLORS = ['#1e4fa3', '#0f766e', '#7c3aed', '#be185d', '#b45309', '#0891b2'];
 
 // Le modèle User peut utiliser des noms de champs différents selon ton backend.
@@ -46,6 +45,7 @@ const PAGE_SIZE = 5;
 export default function Candidatures() {
   // Si ta route est du type /recruteur/offres/:offreId/candidatures
   const { offreId } = useParams();
+  const navigate = useNavigate();
 
   const [candidatures, setCandidatures] = useState([]);
   const [usersById, setUsersById] = useState({});
@@ -264,9 +264,13 @@ export default function Candidatures() {
                         <button className="rp-btn rp-btn--outline rp-btn--sm" title="CV" onClick={() => handleDownloadCv(c.cvFileName)}>
                           <FiDownload size={13} />
                         </button>
-                        <button className="rp-btn rp-btn--outline rp-btn--sm" title="Entretien">
-                          <FiCalendar size={13} />
-                        </button>
+                        <button
+                             className="rp-btn rp-btn--outline rp-btn--sm"
+                           title="Planifier un entretien"
+                 onClick={() => navigate('/recruteur/entretiens', { state: { preselectCandidatureId: rowId } })}
+                     >
+                      <FiCalendar size={13} />
+                          </button>
                         <button
                           className="rp-btn rp-btn--success rp-btn--sm"
                           title="Accepter"

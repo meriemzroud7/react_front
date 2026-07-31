@@ -1,125 +1,252 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FiPlus, FiVideo, FiEdit2, FiCalendar, FiXCircle, FiClock, FiUsers } from 'react-icons/fi';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FiPlus, FiVideo, FiClock, FiCheckCircle, FiXCircle, FiX } from 'react-icons/fi';
+import {
+  getEntretiens, getEntretienStats, programmerEntretien,
+  demarrerEntretien, changerStatut,
+} from '../../services/apiServiceEntretien';
+import CandidatureService from '../../services/apiServiceCandidature';
+import '../../styles/entretien-form.css';
 
-const INTERVIEWS = [
-  { id: 1, candidat: 'Yasmine Ben Ali', avatar: 'YB', color: '#1e4fa3', poste: 'Software Engineer', date: '20 Jan 2025', heure: '14:00', type: 'En ligne', intervieweurs: ['Mariem K.', 'Karim B.'], statut: 'Programmé', statusClass: 'blue' },
-  { id: 2, candidat: 'Sarra Chaari', avatar: 'SC', color: '#7c3aed', poste: 'Software Engineer', date: '22 Jan 2025', heure: '10:30', type: 'Présentiel', intervieweurs: ['Mariem K.'], statut: 'Confirmé', statusClass: 'green' },
-  { id: 3, candidat: 'Ahmed Maalej', avatar: 'AM', color: '#0f766e', poste: 'Data Analyst', date: '23 Jan 2025', heure: '15:00', type: 'En ligne', intervieweurs: ['Mariem K.', 'Sami T.'], statut: 'Programmé', statusClass: 'blue' },
-  { id: 4, candidat: 'Fathi Hamdi', avatar: 'FH', color: '#b45309', poste: 'Product Manager', date: '18 Jan 2025', heure: '11:00', type: 'En ligne', intervieweurs: ['Mariem K.'], statut: 'Terminé', statusClass: 'gray' },
-  { id: 5, candidat: 'Inès Sfar', avatar: 'IS', color: '#0891b2', poste: 'UX Designer', date: '17 Jan 2025', heure: '09:00', type: 'Présentiel', intervieweurs: ['Mariem K.', 'Nour H.'], statut: 'Annulé', statusClass: 'red' },
+const TABS = [
+  { key: null, label: 'Tous' },
+  { key: 'PROGRAMME', label: 'Programmés' },
+  { key: 'CONFIRME', label: 'Confirmés' },
+  { key: 'TERMINE', label: 'Terminés' },
+  { key: 'ANNULE', label: 'Annulés' },
 ];
 
-const STATUT_CLASS = { Programmé: 'blue', Confirmé: 'green', Terminé: 'gray', Annulé: 'red' };
+function getUserDisplayName(user) {
+  if (!user) return 'Candidat';
+  const first = user.prenom || user.firstName;
+  const last = user.nom || user.lastName;
+  if (first && last) return `${first} ${last}`;
+  if (first) return first;
+  return user.email?.split('@')[0] || 'Candidat';
+}
 
 export default function Entretiens() {
-  const [filter, setFilter] = useState('');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(null);
+  const [entretiens, setEntretiens] = useState([]);
+  const [stats, setStats] = useState(null);
+ const [form, setForm] = useState({ date: '', heure: '', type: 'EN_LIGNE', intervieweurs: '' });
+  const [candidatures, setCandidatures] = useState([]);
+  const [usersMap, setUsersMap] = useState({});
 
-  const filtered = INTERVIEWS.filter(e => !filter || e.statut === filter);
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedCandidatureId, setSelectedCandidatureId] = useState('');
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [entretiensRes, statsRes] = await Promise.all([
+        getEntretiens(activeTab),
+        getEntretienStats(),
+      ]);
+      setEntretiens(entretiensRes.data);
+      setStats(statsRes.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { loadCandidatures(); }, []);
+
+  async function loadCandidatures() {
+    try {
+      const list = await CandidatureService.getAll();
+      setCandidatures(list);
+      const users = await CandidatureService.getUsersByIds(list.map((c) => c.candidatId));
+      setUsersMap(users);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function getCandidatureLabel(c) {
+    return getUserDisplayName(usersMap[c.candidatId]);
+  }
+
+  async function handleCreate(e) {
+    e.preventDefault();
+    const candidature = candidatures.find((c) => (c.id || c._id) === selectedCandidatureId);
+    if (!candidature) {
+      alert('Sélectionnez un candidat.');
+      return;
+    }
+
+    const candidatNom = getUserDisplayName(usersMap[candidature.candidatId]);
+
+    try {
+      await programmerEntretien({
+        candidatureId: candidature.id || candidature._id,
+        candidatId: candidature.candidatId,
+        candidatNom,
+        poste: candidature.poste || '', // à ajuster une fois OffreService branché
+        date: form.date,
+        heure: form.heure,
+        type: form.type,
+        intervieweurs: form.intervieweurs.split(',').map((s) => s.trim()).filter(Boolean),
+      });
+      setShowForm(false);
+      setSelectedCandidatureId('');
+      setForm({ date: '', heure: '', type: 'VISIO', intervieweurs: '' });
+      loadData();
+    } catch (err) {
+      console.error('Détail erreur backend:', JSON.stringify(err.response?.data, null, 2));
+      alert("Échec de la planification. " + (err.response?.data?.message || ''));
+    }
+  }
+
+  async function handleStart(entretien) {
+    try {
+      const res = await demarrerEntretien(entretien.id);
+      navigate(`/recruteur/salle-entretien?id=${res.data.id}`);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleCancel(id) {
+    if (!window.confirm('Annuler cet entretien ?')) return;
+    try {
+      await changerStatut(id, 'ANNULE');
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   return (
     <div>
       <div className="rp-header">
         <div className="rp-header__top">
           <div>
-            <h1 className="rp-title">Gestion des entretiens</h1>
-            <p className="rp-subtitle">{INTERVIEWS.length} entretiens · {INTERVIEWS.filter(e => e.statut === 'Programmé').length} programmés</p>
+            <h1 className="rp-title">Entretiens</h1>
+            <p className="rp-subtitle">Planifiez et gérez les entretiens avec vos candidats</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Link to="/recruteur/calendrier" className="rp-btn rp-btn--outline"><FiCalendar /> Calendrier</Link>
-            <button className="rp-btn rp-btn--primary"><FiPlus /> Programmer</button>
-          </div>
+          <button className="rp-btn rp-btn--primary" onClick={() => setShowForm(true)}>
+            <FiPlus /> Planifier un entretien
+          </button>
         </div>
       </div>
 
-      {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
-        {[
-          { label: 'Total', val: INTERVIEWS.length, color: '#1e4fa3', bg: 'rgba(30,79,163,0.08)' },
-          { label: 'Programmés', val: INTERVIEWS.filter(e => e.statut === 'Programmé').length, color: '#0891b2', bg: 'rgba(8,145,178,0.08)' },
-          { label: 'Confirmés', val: INTERVIEWS.filter(e => e.statut === 'Confirmé').length, color: '#16a34a', bg: 'rgba(22,163,74,0.08)' },
-          { label: 'Terminés', val: INTERVIEWS.filter(e => e.statut === 'Terminé').length, color: '#6b7a8d', bg: 'rgba(107,122,141,0.08)' },
-        ].map((s, i) => (
-          <div key={i} className="rp-card" style={{ padding: '1rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: s.color }}>{s.val}</div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{s.label}</div>
-          </div>
+      {stats && (
+        <div className="rp-stats" style={{ marginBottom: '1.25rem' }}>
+          <div className="rp-stat"><div className="rp-stat__value">{stats.total}</div><div className="rp-stat__label">Total</div></div>
+          <div className="rp-stat"><div className="rp-stat__value">{stats.programmes}</div><div className="rp-stat__label">Programmés</div></div>
+          <div className="rp-stat"><div className="rp-stat__value">{stats.confirmes}</div><div className="rp-stat__label">Confirmés</div></div>
+          <div className="rp-stat"><div className="rp-stat__value">{stats.termines}</div><div className="rp-stat__label">Terminés</div></div>
+          <div className="rp-stat"><div className="rp-stat__value">{stats.annules}</div><div className="rp-stat__label">Annulés</div></div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+        {TABS.map((t) => (
+          <button
+            key={t.label}
+            className={`rp-btn ${activeTab === t.key ? 'rp-btn--primary' : 'rp-btn--outline'} rp-btn--sm`}
+            onClick={() => setActiveTab(t.key)}
+          >
+            {t.label}
+          </button>
         ))}
       </div>
 
-      <div className="rp-card">
-        {/* Filter */}
-        <div className="rp-filters">
-          {['', 'Programmé', 'Confirmé', 'Terminé', 'Annulé'].map(s => (
-            <button key={s} onClick={() => setFilter(s)} className="rp-btn rp-btn--outline rp-btn--sm"
-              style={{ background: filter === s ? 'var(--primary)' : '#fff', color: filter === s ? '#fff' : 'var(--foreground)', borderColor: filter === s ? 'var(--primary)' : 'var(--border)' }}>
-              {s || 'Tous'}
-            </button>
+      {loading ? (
+        <p>Chargement...</p>
+      ) : entretiens.length === 0 ? (
+        <p style={{ color: 'var(--muted)' }}>Aucun entretien dans cette catégorie.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {entretiens.map((e) => (
+            <div key={e.id} className="rp-card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div>
+                <div style={{ fontWeight: 600 }}>{e.candidatNom} — {e.poste}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', gap: '1rem', marginTop: 4 }}>
+                  <span><FiClock size={12} /> {e.date} à {e.heure}</span>
+                  <span>{e.type}</span>
+                  <span>{e.type === 'EN_LIGNE' ? 'En ligne' : 'Présentiel'}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {e.statut !== 'TERMINE' && e.statut !== 'ANNULE' && (
+                  <>
+                    <button className="rp-btn rp-btn--primary rp-btn--sm" onClick={() => handleStart(e)}>
+                      <FiVideo size={13} /> Démarrer
+                    </button>
+                    <button className="rp-btn rp-btn--outline rp-btn--sm" onClick={() => handleCancel(e.id)}>
+                      <FiXCircle size={13} /> Annuler
+                    </button>
+                  </>
+                )}
+                {e.statut === 'TERMINE' && (
+                  <span style={{ color: 'var(--success)', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.8rem' }}>
+                    <FiCheckCircle size={13} /> {e.decision}
+                  </span>
+                )}
+              </div>
+            </div>
           ))}
         </div>
+      )}
 
-        {/* Table */}
-        <div className="rp-table-wrap">
-          <table className="rp-table">
-            <thead>
-              <tr>
-                <th>Candidat</th>
-                <th>Poste</th>
-                <th>Date</th>
-                <th>Heure</th>
-                <th>Type</th>
-                <th>Intervieweurs</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(e => (
-                <tr key={e.id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <div className="rp-avatar" style={{ width: 34, height: 34, background: e.color, fontSize: '0.7rem', flexShrink: 0 }}>{e.avatar}</div>
-                      <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{e.candidat}</span>
-                    </div>
-                  </td>
-                  <td style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{e.poste}</td>
-                  <td style={{ fontSize: '0.82rem', fontWeight: 600 }}>{e.date}</td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem' }}>
-                      <FiClock size={12} style={{ color: 'var(--muted)' }} /> {e.heure}
-                    </div>
-                  </td>
-                  <td>
-                    <span className={`rp-badge ${e.type === 'En ligne' ? 'rp-badge--blue' : 'rp-badge--amber'}`}>
-                      {e.type === 'En ligne' ? <FiVideo size={10} /> : null} {e.type}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
-                      <FiUsers size={12} /> {e.intervieweurs.join(', ')}
-                    </div>
-                  </td>
-                  <td><span className={`rp-badge rp-badge--${STATUT_CLASS[e.statut]}`}>{e.statut}</span></td>
-                  <td>
-                    <div className="rp-table__actions">
-                      {e.statut !== 'Terminé' && e.statut !== 'Annulé' && (
-                        <Link to="/recruteur/salle-entretien" className="rp-btn rp-btn--primary rp-btn--sm" title="Démarrer">
-                          <FiVideo size={12} /> Démarrer
-                        </Link>
-                      )}
-                      <button className="rp-btn rp-btn--outline rp-btn--sm" title="Modifier"><FiEdit2 size={12} /></button>
-                      <button className="rp-btn rp-btn--outline rp-btn--sm" title="Reporter"><FiCalendar size={12} /></button>
-                      {e.statut !== 'Annulé' && (
-                        <button className="rp-btn rp-btn--danger rp-btn--sm" title="Annuler"><FiXCircle size={12} /></button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {showForm && (
+        <div className="ef-overlay" onClick={() => setShowForm(false)}>
+          <form onSubmit={handleCreate} className="ef-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ef-modal__header">
+              <h3>Planifier un entretien</h3>
+              <button type="button" className="ef-modal__close" onClick={() => setShowForm(false)}><FiX /></button>
+            </div>
+
+            <div className="ef-field">
+              <label>Candidat</label>
+              <select required value={selectedCandidatureId} onChange={(e) => setSelectedCandidatureId(e.target.value)}>
+                <option value="" disabled>Sélectionner un candidat</option>
+                {candidatures.map((c) => {
+                  const id = c.id || c._id;
+                  return <option key={id} value={id}>{getCandidatureLabel(c)}</option>;
+                })}
+              </select>
+            </div>
+
+            <div className="ef-field-row">
+              <div className="ef-field">
+                <label>Date</label>
+                <input required type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+              </div>
+              <div className="ef-field">
+                <label>Heure</label>
+                <input required type="time" value={form.heure} onChange={(e) => setForm({ ...form, heure: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="ef-field">
+              <label>Type d'entretien</label>
+             <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+  <option value="EN_LIGNE">En ligne</option>
+  <option value="PRESENTIEL">Présentiel</option>
+</select>
+            </div>
+
+            <div className="ef-field">
+              <label>Intervieweurs</label>
+              <input placeholder="Ex: Mariem K., Karim B." value={form.intervieweurs} onChange={(e) => setForm({ ...form, intervieweurs: e.target.value })} />
+            </div>
+
+            <div className="ef-modal__footer">
+              <button type="button" className="rp-btn rp-btn--outline" onClick={() => setShowForm(false)}>Annuler</button>
+              <button type="submit" className="rp-btn rp-btn--primary">Planifier</button>
+            </div>
+          </form>
         </div>
-      </div>
+      )}
     </div>
   );
 }
