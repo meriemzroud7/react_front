@@ -72,8 +72,35 @@
   },
   "common": {
     "learnMore": "Learn more"
-  }
-,
+  },
+  "recruteur": {
+    "logoSubtitle": "Recruiter dashboard",
+    "group": {
+      "main": "Main",
+      "candidates": "Candidates",
+      "organization": "Organization"
+    },
+    "menu": {
+      "dashboard": "Dashboard",
+      "offres": "Job listings",
+      "createOffer": "Create job",
+      "candidatures": "Applications",
+      "analyseIA": "AI analysis",
+      "comparaison": "Comparison",
+      "entretiens": "Interviews",
+      "calendar": "HR Calendar",
+      "messaging": "Messaging",
+      "reports": "Reports & Stats",
+      "settings": "Settings"
+    },
+    "searchPlaceholder": "Search candidates, jobs...",
+    "profile": {
+      "settings": "Settings",
+      "logout": "Log out"
+    },
+    "userDefault": "User",
+    "role": "HR Manager"
+  },
 
   "login": {
     "tagline": "Your opportunity starts here",

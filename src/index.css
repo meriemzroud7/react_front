@@ -2,6 +2,12 @@
   --background: #f7f9fb;
   --foreground: #1b2b3f;
   --card: #ffffff;
+  --sidebar: #0f1f3d;
+  --sidebar-text: #ffffff;
+  --sidebar-muted: rgba(255,255,255,0.45);
+  --sidebar-muted-soft: rgba(255,255,255,0.3);
+  --sidebar-border: rgba(255,255,255,0.08);
+  --topbar: #ffffff;
 
   --primary: #1c4487;
   --primary-dark: #12305f;
@@ -48,6 +54,12 @@
 
   --shadow: 0 16px 40px rgba(2, 6, 23, 0.45);
   --shadow-strong: 0 24px 60px rgba(2, 6, 23, 0.6);
+  --sidebar: #0f172a;
+  --sidebar-text: #f2f6ff;
+  --sidebar-muted: rgba(242,246,255,0.65);
+  --sidebar-muted-soft: rgba(242,246,255,0.44);
+  --sidebar-border: rgba(255,255,255,0.08);
+  --topbar: #111b2d;
 }
 
 * {

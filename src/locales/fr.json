@@ -73,7 +73,34 @@
   "common": {
     "learnMore": "En savoir plus"
   },
-  
+  "recruteur": {
+    "logoSubtitle": "Espace Recruteur",
+    "group": {
+      "main": "Principal",
+      "candidates": "Candidats",
+      "organization": "Organisation"
+    },
+    "menu": {
+      "dashboard": "Tableau de bord",
+      "offres": "Offres d'emploi",
+      "createOffer": "Créer une offre",
+      "candidatures": "Candidatures",
+      "analyseIA": "Analyse IA",
+      "comparaison": "Comparaison",
+      "entretiens": "Entretiens",
+      "calendar": "Calendrier RH",
+      "messaging": "Messagerie",
+      "reports": "Rapports & Stats",
+      "settings": "Paramètres"
+    },
+    "searchPlaceholder": "Rechercher candidats, offres...",
+    "profile": {
+      "settings": "Paramètres",
+      "logout": "Se déconnecter"
+    },
+    "userDefault": "Utilisateur",
+    "role": "Responsable RH"
+  },
 
   "login": {
     "tagline": "فرصتك تبدأ هنا",

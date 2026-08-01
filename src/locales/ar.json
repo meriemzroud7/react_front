@@ -72,8 +72,35 @@
   },
   "common": {
     "learnMore": "اعرف المزيد"
-  }
-,
+  },
+  "recruteur": {
+    "logoSubtitle": "لوحة مسؤول التوظيف",
+    "group": {
+      "main": "أساسي",
+      "candidates": "المرشحون",
+      "organization": "المنظمة"
+    },
+    "menu": {
+      "dashboard": "لوحة التحكم",
+      "offres": "الوظائف",
+      "createOffer": "إنشاء وظيفة",
+      "candidatures": "الطلبات",
+      "analyseIA": "تحليل الذكاء الاصطناعي",
+      "comparaison": "المقارنة",
+      "entretiens": "المقابلات",
+      "calendar": "تقويم الموارد البشرية",
+      "messaging": "المراسلة",
+      "reports": "التقارير والإحصائيات",
+      "settings": "الإعدادات"
+    },
+    "searchPlaceholder": "ابحث عن مرشحين أو وظائف...",
+    "profile": {
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "userDefault": "المستخدم",
+    "role": "مدير الموارد البشرية"
+  },
 
   "login": {
     "tagline": "فرصتك تبدأ هنا",
