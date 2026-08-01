@@ -10,6 +10,7 @@ import {
 } from '../../services/apiServiceEntretien';
 import CandidatureService from '../../services/apiServiceCandidature';
 import { getOffreById } from '../../services/apiServiceOffres';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/entretien-form.css';
 
 const TABS = [
@@ -64,6 +65,7 @@ const EMPTY_FORM = { date: '', heure: '', type: 'EN_LIGNE', intervieweurs: '', p
 export default function Entretiens() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useState(null);
   const [entretiens, setEntretiens] = useState([]);
@@ -98,11 +100,13 @@ export default function Entretiens() {
   useEffect(() => { loadData(); }, [loadData]);
   useEffect(() => { loadCandidatures(); }, []);
 
-  // ouverture directe du formulaire depuis "Planifier un entretien" sur la page Candidatures
+  // ouverture directe du formulaire depuis "Planifier un entretien" (Candidatures) ou depuis le Calendrier
   useEffect(() => {
     if (location.state?.preselectCandidatureId) {
       setSelectedCandidatureId(location.state.preselectCandidatureId);
       setShowForm(true);
+    } else if (location.state?.openCreateForm) {
+      openCreateForm(location.state.prefillDate);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
@@ -137,10 +141,12 @@ export default function Entretiens() {
     return poste ? `${nom} — ${poste}` : nom;
   }
 
-  function openCreateForm() {
+  function openCreateForm(prefillDate) {
     setEditingId(null);
     setSelectedCandidatureId('');
-    setForm(EMPTY_FORM);
+    const storedPrefs = user?.id && localStorage.getItem(`fursa_entretien_prefs_${user.id}`);
+    const defaultType = storedPrefs ? JSON.parse(storedPrefs).type : EMPTY_FORM.type;
+    setForm({ ...EMPTY_FORM, type: defaultType, ...(prefillDate && { date: prefillDate }) });
     setShowForm(true);
   }
 
