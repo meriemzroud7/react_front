@@ -5,6 +5,7 @@ import {
   FiUser, FiMail, FiPhone, FiFilter, FiLayers, FiLoader, FiAlertCircle
 } from 'react-icons/fi';
 import CandidatureService from '../../services/apiServiceCandidature';
+import { useAuth } from '../../context/AuthContext'; // ⚠️ adapte le chemin exact à ton projet
 
 // --- Config statut : adapte les clés à ton enum StatutCandidature côté backend ---
 const STATUT_CONFIG = {
@@ -46,6 +47,7 @@ export default function Candidatures() {
   // Si ta route est du type /recruteur/offres/:offreId/candidatures
   const { offreId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth(); // 👈 récupère le recruteur connecté
 
   const [candidatures, setCandidatures] = useState([]);
   const [usersById, setUsersById] = useState({});
@@ -64,10 +66,10 @@ export default function Candidatures() {
     setError(null);
     try {
       // Si un offreId est présent dans l'URL, on filtre sur cette offre.
-      // Sinon on charge toutes les candidatures (vue globale du recruteur).
+      // Sinon on charge les candidatures des offres du recruteur connecté uniquement.
       const data = offreId
         ? await CandidatureService.getByOffre(offreId)
-        : await CandidatureService.getAll();
+        : await CandidatureService.getByRecruteur(user.id); // 👈 remplace getAll()
       const list = Array.isArray(data) ? data : [];
       setCandidatures(list);
 
@@ -83,9 +85,11 @@ export default function Candidatures() {
   };
 
   useEffect(() => {
-    fetchCandidatures();
+    if (offreId || user?.id) {
+      fetchCandidatures();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offreId]);
+  }, [offreId, user]);
 
   // --- Filtrage côté client ---
   const filtered = useMemo(() => {
@@ -158,14 +162,13 @@ export default function Candidatures() {
             <h1 className="rp-title">Liste des candidatures</h1>
             <p className="rp-subtitle">{filtered.length} candidature{filtered.length > 1 ? 's' : ''}</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            {selected.length >= 2 && (
-              <Link to="/recruteur/comparaison" state={{ ids: selected }} className="rp-btn rp-btn--outline">
-                <FiLayers /> Comparer ({selected.length})
-              </Link>
-            )}
-            <button className="rp-btn rp-btn--outline"><FiDownload /> Exporter</button>
-          </div>
+         <div style={{ display: 'flex', gap: '0.75rem' }}>
+  {selected.length >= 2 && (
+    <Link to="/recruteur/comparaison" state={{ ids: selected }} className="rp-btn rp-btn--outline">
+      <FiLayers /> Comparer ({selected.length})
+    </Link>
+  )}
+</div>
         </div>
       </div>
 
@@ -265,12 +268,12 @@ export default function Candidatures() {
                           <FiDownload size={13} />
                         </button>
                         <button
-                             className="rp-btn rp-btn--outline rp-btn--sm"
-                           title="Planifier un entretien"
-                 onClick={() => navigate('/recruteur/entretiens', { state: { preselectCandidatureId: rowId } })}
-                     >
-                      <FiCalendar size={13} />
-                          </button>
+                          className="rp-btn rp-btn--outline rp-btn--sm"
+                          title="Planifier un entretien"
+                          onClick={() => navigate('/recruteur/entretiens', { state: { preselectCandidatureId: rowId } })}
+                        >
+                          <FiCalendar size={13} />
+                        </button>
                         <button
                           className="rp-btn rp-btn--success rp-btn--sm"
                           title="Accepter"

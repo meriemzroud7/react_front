@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiDownload, FiTrendingUp, FiUsers, FiClock, FiCheckCircle } from 'react-icons/fi';
+import {  FiTrendingUp, FiUsers, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getOffresByRecruteur } from '../../services/apiServiceOffres';
 import CandidatureService from '../../services/apiServiceCandidature';
@@ -206,19 +206,17 @@ export default function Rapports() {
             <p className="rp-subtitle">Analyse complète de vos performances de recrutement</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', background: 'var(--border-light)', borderRadius: 'var(--radius-sm)', padding: 3 }}>
-              {['3m', '7m', '1an'].map(p => (
-                <button key={p} onClick={() => setPeriod(p)} style={{
-                  padding: '0.35rem 0.75rem', border: 'none', borderRadius: 8, cursor: 'pointer',
-                  fontWeight: 600, fontSize: '0.78rem', fontFamily: 'var(--font)',
-                  background: period === p ? '#fff' : 'transparent',
-                  color: period === p ? 'var(--primary)' : 'var(--muted)', transition: 'all 0.15s'
-                }}>{p}</button>
-              ))}
-            </div>
-            <button className="rp-btn rp-btn--outline"><FiDownload /> PDF</button>
-            <button className="rp-btn rp-btn--outline"><FiDownload /> Excel</button>
-          </div>
+  <div style={{ display: 'flex', background: 'var(--border-light)', borderRadius: 'var(--radius-sm)', padding: 3 }}>
+    {['3m', '7m', '1an'].map(p => (
+      <button key={p} onClick={() => setPeriod(p)} style={{
+        padding: '0.35rem 0.75rem', border: 'none', borderRadius: 8, cursor: 'pointer',
+        fontWeight: 600, fontSize: '0.78rem', fontFamily: 'var(--font)',
+        background: period === p ? '#fff' : 'transparent',
+        color: period === p ? 'var(--primary)' : 'var(--muted)', transition: 'all 0.15s'
+      }}>{p}</button>
+    ))}
+  </div>
+</div>
         </div>
       </div>
 

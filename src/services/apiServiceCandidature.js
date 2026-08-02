@@ -79,6 +79,8 @@ const CandidatureService = {
     const { data } = await api.get(`/candidatures/candidat/${candidatId}`);
     return data;
   },
+  /**
+
 
   /**
    * Récupérer une candidature par id
@@ -107,6 +109,25 @@ const CandidatureService = {
     const { data } = await api.delete(`/candidatures/${id}`);
     return data;
   },
+  /**
+ * Récupérer toutes les candidatures liées aux offres d'un recruteur
+ * (filtrage réalisé côté frontend : offres du recruteur -> candidatures de ces offres)
+ */
+getByRecruteur: async (recruteurId) => {
+  // 1. Récupérer les offres du recruteur
+  const { data: offres } = await api.get(`/offres/recruteur/${recruteurId}`);
+  const offreIds = offres.map(o => o.id || o._id);
+
+  // 2. Récupérer les candidatures de chaque offre en parallèle
+  const results = await Promise.allSettled(
+    offreIds.map(id => api.get(`/candidatures/offre/${id}`).then(r => r.data))
+  );
+
+  // 3. Fusionner tous les résultats
+  return results
+    .filter(r => r.status === 'fulfilled')
+    .flatMap(r => r.value);
+},
 
   /**
    * URL de téléchargement direct du CV (à utiliser dans un <a href> ou window.open)
