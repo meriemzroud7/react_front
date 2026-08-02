@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -7,10 +7,28 @@ import {
   FiGrid, FiBriefcase, FiPlusCircle, FiUsers, FiCpu,
   FiBarChart2, FiCalendar, FiMessageSquare, FiSettings,
   FiLogOut, FiMenu, FiBell, FiSearch, FiChevronDown,
-  FiVideo, FiLayers, FiMoon, FiSun
+  FiVideo, FiLayers, FiMoon, FiSun, FiBriefcase as FiOffreIcon, FiUser as FiCandidatIcon
 } from 'react-icons/fi';
 import LanguageSwitcher from '../composant/LanguageSwitcher';
+import { getOffresByRecruteur } from '../services/apiServiceOffres';
+import CandidatureService from '../services/apiServiceCandidature';
 import '../styles/recruteur-layout.css';
+
+const API_ORIGIN = 'http://localhost:8080';
+
+function getUserField(user, ...keys) {
+  for (const k of keys) {
+    if (user && user[k] !== undefined && user[k] !== null && user[k] !== '') return user[k];
+  }
+  return '';
+}
+
+function candidatDisplayName(user) {
+  const prenom = getUserField(user, 'prenom', 'firstName', 'firstname');
+  const nom = getUserField(user, 'nom', 'lastName', 'lastname');
+  const full = `${prenom} ${nom}`.trim();
+  return full || getUserField(user, 'email') || 'Candidat';
+}
 
 const NAV_ITEMS = [
   { to: '/recruteur', icon: <FiGrid />, label: 'recruteur.menu.dashboard', end: true },
@@ -39,12 +57,117 @@ export default function RecruteurLayout() {
     ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase()
     : '??';
   const role = user?.role === 'RECRUTEUR' ? t('recruteur.role') : (user?.role || '');
+  const photoUrl = user?.image ? `${API_ORIGIN}/${user.image}` : null;
 
   const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  // ── Recherche globale (offres + candidatures) ───────────────────
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [offresIndex, setOffresIndex] = useState([]); // toutes les offres du recruteur, chargées une fois
+  const [candidaturesIndex, setCandidaturesIndex] = useState([]); // candidatures enrichies, chargées une fois
+  const [indexLoaded, setIndexLoaded] = useState(false);
+  const searchBoxRef = useRef(null);
+
+  // Charge une seule fois (à la première interaction) les offres + candidatures du recruteur,
+  // pour permettre une recherche instantanée côté client sans appel réseau à chaque frappe.
+  const loadSearchIndex = useCallback(async () => {
+    if (indexLoaded || !user?.id) return;
+    setSearchLoading(true);
+    try {
+      const [offresRes, candidatures] = await Promise.all([
+        getOffresByRecruteur(user.id),
+        CandidatureService.getByRecruteur(user.id),
+      ]);
+      const offresList = offresRes.data || [];
+      setOffresIndex(offresList);
+
+      const users = await CandidatureService.getUsersByIds(candidatures.map((c) => c.candidatId));
+      const offresById = Object.fromEntries(offresList.map((o) => [o.id || o._id, o]));
+      setCandidaturesIndex(
+        candidatures.map((c) => ({
+          ...c,
+          candidatNom: candidatDisplayName(users[c.candidatId]),
+          candidatEmail: getUserField(users[c.candidatId], 'email'),
+          offreTitre: offresById[c.offreId]?.titre || '',
+        }))
+      );
+      setIndexLoaded(true);
+    } catch (err) {
+      console.error('Erreur lors du chargement de la recherche globale', err);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [indexLoaded, user?.id]);
+
+  const handleSearchFocus = () => {
+    setSearchOpen(true);
+    loadSearchIndex();
+  };
+
+  // Ferme le dropdown si on clique en dehors de la barre de recherche
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const q = searchQuery.trim().toLowerCase();
+  const matchedOffres = q
+    ? offresIndex.filter((o) => o.titre?.toLowerCase().includes(q)).slice(0, 5)
+    : [];
+  const matchedCandidatures = q
+    ? candidaturesIndex
+        .filter(
+          (c) =>
+            c.candidatNom?.toLowerCase().includes(q) ||
+            c.candidatEmail?.toLowerCase().includes(q) ||
+            c.offreTitre?.toLowerCase().includes(q)
+        )
+        .slice(0, 5)
+    : [];
+  const hasResults = matchedOffres.length > 0 || matchedCandidatures.length > 0;
+
+  const goToOffre = (offre) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    navigate(`/recruteur/offres/${offre.id || offre._id}/modifier`);
+  };
+
+  const goToCandidature = (c) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    navigate(`/recruteur/profil/${c.candidatId}`);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      setSearchOpen(false);
+      e.target.blur();
+    } else if (e.key === 'Enter') {
+      // Enter avec un seul résultat pertinent -> y aller directement
+      if (matchedOffres.length === 1 && matchedCandidatures.length === 0) {
+        goToOffre(matchedOffres[0]);
+      } else if (matchedCandidatures.length === 1 && matchedOffres.length === 0) {
+        goToCandidature(matchedCandidatures[0]);
+      } else if (matchedOffres.length > 0) {
+        navigate('/recruteur/offres');
+        setSearchOpen(false);
+      } else if (matchedCandidatures.length > 0) {
+        navigate('/recruteur/candidatures');
+        setSearchOpen(false);
+      }
+    }
   };
 
   return (
@@ -113,7 +236,16 @@ export default function RecruteurLayout() {
         {/* Sidebar footer */}
         <div className="rl-sidebar__footer">
           <div className="rl-sidebar__user">
-            <div className="rl-sidebar__user-avatar">{initials}</div>
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={fullName}
+                className="rl-sidebar__user-avatar"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="rl-sidebar__user-avatar">{initials}</div>
+            )}
             <div className="rl-sidebar__user-info">
               <div className="rl-sidebar__user-name">{fullName}</div>
               <div className="rl-sidebar__user-role">{role}</div>
@@ -133,9 +265,80 @@ export default function RecruteurLayout() {
             <FiMenu />
           </button>
 
-          <div className="rl-topbar__search">
+          <div className="rl-topbar__search" ref={searchBoxRef} style={{ position: 'relative' }}>
             <FiSearch className="rl-topbar__search-icon" />
-            <input placeholder={t('recruteur.searchPlaceholder')} />
+            <input
+              placeholder={t('recruteur.searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+              onFocus={handleSearchFocus}
+              onKeyDown={handleSearchKeyDown}
+            />
+
+            {searchOpen && q && (
+              <div
+                style={{
+                  position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0,
+                  background: '#fff', border: '1px solid var(--border-light)', borderRadius: 12,
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.12)', maxHeight: 360, overflowY: 'auto', zIndex: 50,
+                }}
+              >
+                {searchLoading && (
+                  <div style={{ padding: '0.9rem 1rem', fontSize: '0.82rem', color: 'var(--muted)' }}>
+                    Recherche en cours...
+                  </div>
+                )}
+
+                {!searchLoading && !hasResults && (
+                  <div style={{ padding: '0.9rem 1rem', fontSize: '0.82rem', color: 'var(--muted)' }}>
+                    Aucun résultat pour « {searchQuery} »
+                  </div>
+                )}
+
+                {!searchLoading && matchedOffres.length > 0 && (
+                  <div>
+                    <div style={{ padding: '0.5rem 1rem 0.25rem', fontSize: '0.68rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
+                      Offres
+                    </div>
+                    {matchedOffres.map((o) => (
+                      <div
+                        key={o.id || o._id}
+                        onClick={() => goToOffre(o)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', cursor: 'pointer' }}
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        <FiOffreIcon size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                        <span style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.titre}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!searchLoading && matchedCandidatures.length > 0 && (
+                  <div>
+                    <div style={{ padding: '0.5rem 1rem 0.25rem', fontSize: '0.68rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' }}>
+                      Candidats
+                    </div>
+                    {matchedCandidatures.map((c) => (
+                      <div
+                        key={c.id || c._id}
+                        onClick={() => goToCandidature(c)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', cursor: 'pointer' }}
+                        onMouseDown={(e) => e.preventDefault()}
+                      >
+                        <FiCandidatIcon size={14} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.candidatNom}</div>
+                          {c.offreTitre && (
+                            <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{c.offreTitre}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="rl-topbar__right">
@@ -151,7 +354,16 @@ export default function RecruteurLayout() {
             </button>
 
             <div className="rl-topbar__profile" onClick={() => setProfileOpen(!profileOpen)}>
-              <div className="rl-topbar__profile-avatar">{initials}</div>
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={fullName}
+                  className="rl-topbar__profile-avatar"
+                  style={{ objectFit: 'cover' }}
+                />
+              ) : (
+                <div className="rl-topbar__profile-avatar">{initials}</div>
+              )}
               <span className="rl-topbar__profile-name">{shortName}</span>
               <FiChevronDown size={14} />
               {profileOpen && (
