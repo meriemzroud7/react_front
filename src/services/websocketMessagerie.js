@@ -10,10 +10,10 @@ const statusSubscriptions = {};
 
 /**
  * Ouvre la connexion websocket pour un utilisateur donne.
- * callbacks = { onMessageReceived, onReadReceipt, onConnected }
+ * callbacks = { onMessageReceived, onReadReceipt, onConnected, onMessageEdited, onMessageDeleted }
  */
 export function connectWebSocket(userId, callbacks = {}) {
-    const { onMessageReceived, onReadReceipt, onConnected } = callbacks;
+    const { onMessageReceived, onReadReceipt, onConnected, onMessageEdited, onMessageDeleted } = callbacks;
 
     stompClient = new Client({
         webSocketFactory: () => new SockJS(`${WS_URL}?userId=${userId}`),
@@ -27,6 +27,16 @@ export function connectWebSocket(userId, callbacks = {}) {
             // reception des accuses de lecture
             stompClient.subscribe(`/topic/user.${userId}.read-receipts`, (msg) => {
                 onReadReceipt?.(JSON.parse(msg.body));
+            });
+
+            // reception des messages edites
+            stompClient.subscribe(`/topic/user.${userId}.messages.edited`, (msg) => {
+                onMessageEdited?.(JSON.parse(msg.body));
+            });
+
+            // reception des messages supprimes
+            stompClient.subscribe(`/topic/user.${userId}.messages.deleted`, (msg) => {
+                onMessageDeleted?.(JSON.parse(msg.body));
             });
 
             onConnected?.();
@@ -69,6 +79,26 @@ export function sendReadReceipt(conversationId, readerId) {
     stompClient.publish({
         destination: '/app/chat.read',
         body: JSON.stringify({ conversationId, readerId }),
+    });
+}
+
+// Modifie un message existant
+export function sendEditMessage({ messageId, conversationId, editorId, newContent }) {
+    if (!stompClient || !stompClient.connected) return;
+
+    stompClient.publish({
+        destination: '/app/chat.edit',
+        body: JSON.stringify({ messageId, conversationId, editorId, newContent }),
+    });
+}
+
+// Supprime un message existant
+export function sendDeleteMessage({ messageId, conversationId, requesterId }) {
+    if (!stompClient || !stompClient.connected) return;
+
+    stompClient.publish({
+        destination: '/app/chat.delete',
+        body: JSON.stringify({ messageId, conversationId, requesterId }),
     });
 }
 
