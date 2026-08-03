@@ -188,5 +188,71 @@
   "submit": "إنشاء حسابي",
   "alreadyAccount": "لديك حساب بالفعل؟",
   "login": "تسجيل الدخول"
-}
+},
+"admin": {
+    "logoSubtitle": "فضاء المسؤول",
+    "userDefault": "المسؤول",
+    "role": "مسؤول",
+    "searchPlaceholder": "ابحث عن مستخدمين، عروض، ترشيحات...",
+    "groups": {
+      "Principal": "الرئيسية",
+      "Recrutement": "التوظيف",
+      "Configuration": "الإعدادات",
+      "Suivi": "المتابعة",
+      "Système": "النظام"
+    },
+    "menu": {
+      "dashboard": "لوحة التحكم",
+      "utilisateurs": "المستخدمون",
+      "entreprises": "الشركات",
+      "offres": "عروض العمل",
+      "candidatures": "الترشيحات",
+      "entretiens": "المقابلات",
+      "referentiels": "الفئات والمراجع",
+      "competences": "المهارات",
+      "ia": "إدارة الذكاء الاصطناعي",
+      "signalements": "البلاغات",
+      "rapports": "التقارير والإحصائيات",
+      "notifications": "الإشعارات",
+      "parametres": "الإعدادات",
+      "logs": "سجل النشاط",
+      "maintenance": "النسخ الاحتياطي والصيانة"
+    },
+    "profile": {
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "search": {
+      "loading": "جارٍ البحث...",
+      "noResults": "لا توجد نتائج لـ « {{query}} »",
+      "users": "المستخدمون",
+      "offres": "العروض",
+      "candidatures": "الترشيحات"
+    },
+    "dashboardPage": {
+      "title": "لوحة التحكم",
+      "subtitle": "نظرة عامة على نشاط منصة فرصة",
+      "loading": "جارٍ تحميل الإحصائيات...",
+      "loadError": "تعذر تحميل الإحصائيات. تأكد من أن الخادم يعمل.",
+      "stats": {
+        "utilisateurs": "المستخدمون",
+        "recruteurs": "أصحاب العمل",
+        "candidats": "المترشحون",
+        "entreprises": "الشركات",
+        "offres": "العروض المنشورة",
+        "candidaturesLabel": "الترشيحات",
+        "entretiensRealises": "المقابلات المنجزة",
+        "recrutementsFinalises": "التوظيفات المكتملة"
+      },
+      "evolutionTitle": "تطور العروض والترشيحات",
+      "legendOffres": "العروض",
+      "legendCandidatures": "الترشيحات",
+      "alertsTitle": "تنبيهات تشغيلية",
+      "noAlerts": "لا توجد تنبيهات حالياً.",
+      "alertPendingOld": "{{count}} ترشيح(ات) بانتظار الرد منذ أكثر من 14 يوماً",
+      "alertUpcomingInterviews": "{{count}} مقابلة(مقابلات) مبرمجة خلال 48 ساعة",
+      "activitiesTitle": "الأنشطة الأخيرة",
+      "noActivities": "لا توجد أنشطة حديثة."
+    }
+  }
 }

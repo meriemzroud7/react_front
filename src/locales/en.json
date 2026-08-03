@@ -188,5 +188,71 @@
   "submit": "Create my account",
   "alreadyAccount": "Already have an account?",
   "login": "Sign in"
-}
+},
+"admin": {
+    "logoSubtitle": "Admin Space",
+    "userDefault": "Administrator",
+    "role": "Administrator",
+    "searchPlaceholder": "Search users, jobs, applications...",
+    "groups": {
+      "Principal": "Main",
+      "Recrutement": "Recruitment",
+      "Configuration": "Configuration",
+      "Suivi": "Monitoring",
+      "Système": "System"
+    },
+    "menu": {
+      "dashboard": "Dashboard",
+      "utilisateurs": "Users",
+      "entreprises": "Companies",
+      "offres": "Job postings",
+      "candidatures": "Applications",
+      "entretiens": "Interviews",
+      "referentiels": "Categories & References",
+      "competences": "Skills",
+      "ia": "AI Management",
+      "signalements": "Reports",
+      "rapports": "Reports & Stats",
+      "notifications": "Notifications",
+      "parametres": "Settings",
+      "logs": "Activity log",
+      "maintenance": "Backup & Maintenance"
+    },
+    "profile": {
+      "settings": "Settings",
+      "logout": "Log out"
+    },
+    "search": {
+      "loading": "Searching...",
+      "noResults": "No results for \"{{query}}\"",
+      "users": "Users",
+      "offres": "Job postings",
+      "candidatures": "Applications"
+    },
+    "dashboardPage": {
+      "title": "Dashboard",
+      "subtitle": "Global overview of the Fursa platform activity",
+      "loading": "Loading statistics...",
+      "loadError": "Unable to load statistics. Make sure the backend is running.",
+      "stats": {
+        "utilisateurs": "Users",
+        "recruteurs": "Recruiters",
+        "candidats": "Candidates",
+        "entreprises": "Companies",
+        "offres": "Published jobs",
+        "candidaturesLabel": "Applications",
+        "entretiensRealises": "Completed interviews",
+        "recrutementsFinalises": "Finalized hires"
+      },
+      "evolutionTitle": "Trend — Jobs & Applications",
+      "legendOffres": "Jobs",
+      "legendCandidatures": "Applications",
+      "alertsTitle": "Operational alerts",
+      "noAlerts": "No alerts at the moment.",
+      "alertPendingOld": "{{count}} application(s) pending for over 14 days",
+      "alertUpcomingInterviews": "{{count}} interview(s) scheduled within 48h",
+      "activitiesTitle": "Recent activity",
+      "noActivities": "No recent activity."
+    }
+  }
 }

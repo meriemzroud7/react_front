@@ -188,5 +188,71 @@
   "submit": "Créer mon compte",
   "alreadyAccount": "Déjà un compte ?",
   "login": "Se connecter"
-}
+},
+"admin": {
+    "logoSubtitle": "Espace Administrateur",
+    "userDefault": "Administrateur",
+    "role": "Administrateur",
+    "searchPlaceholder": "Rechercher utilisateurs, offres, candidatures...",
+    "groups": {
+      "Principal": "Principal",
+      "Recrutement": "Recrutement",
+      "Configuration": "Configuration",
+      "Suivi": "Suivi",
+      "Système": "Système"
+    },
+    "menu": {
+      "dashboard": "Tableau de bord",
+      "utilisateurs": "Utilisateurs",
+      "entreprises": "Entreprises",
+      "offres": "Offres d'emploi",
+      "candidatures": "Candidatures",
+      "entretiens": "Entretiens",
+      "referentiels": "Catégories & Référentiels",
+      "competences": "Compétences",
+      "ia": "Gestion de l'IA",
+      "signalements": "Signalements",
+      "rapports": "Rapports & Stats",
+      "notifications": "Notifications",
+      "parametres": "Paramètres",
+      "logs": "Journal d'activité",
+      "maintenance": "Sauvegarde & Maintenance"
+    },
+    "profile": {
+      "settings": "Paramètres",
+      "logout": "Se déconnecter"
+    },
+    "search": {
+      "loading": "Recherche en cours...",
+      "noResults": "Aucun résultat pour « {{query}} »",
+      "users": "Utilisateurs",
+      "offres": "Offres",
+      "candidatures": "Candidatures"
+    },
+    "dashboardPage": {
+      "title": "Tableau de bord",
+      "subtitle": "Vue globale sur l'activité de la plateforme Fursa",
+      "loading": "Chargement des statistiques...",
+      "loadError": "Impossible de charger les statistiques. Vérifie que le backend est bien lancé.",
+      "stats": {
+        "utilisateurs": "Utilisateurs",
+        "recruteurs": "Recruteurs",
+        "candidats": "Candidats",
+        "entreprises": "Entreprises",
+        "offres": "Offres publiées",
+        "candidaturesLabel": "Candidatures",
+        "entretiensRealises": "Entretiens réalisés",
+        "recrutementsFinalises": "Recrutements finalisés"
+      },
+      "evolutionTitle": "Évolution — Offres & Candidatures",
+      "legendOffres": "Offres",
+      "legendCandidatures": "Candidatures",
+      "alertsTitle": "Alertes opérationnelles",
+      "noAlerts": "Aucune alerte pour le moment.",
+      "alertPendingOld": "{{count}} candidature(s) en attente depuis plus de 14 jours",
+      "alertUpcomingInterviews": "{{count}} entretien(s) programmé(s) dans les 48h",
+      "activitiesTitle": "Activités récentes",
+      "noActivities": "Aucune activité récente."
+    }
+  }
 }
