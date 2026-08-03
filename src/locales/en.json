@@ -101,6 +101,40 @@
     "userDefault": "User",
     "role": "HR Manager"
   },
+  "candidat": {
+    "logoSubtitle": "Candidate dashboard",
+    "group": {
+      "main": "Main",
+      "opportunities": "Opportunities",
+      "account": "Account"
+    },
+    "menu": {
+      "dashboard": "Dashboard",
+      "profile": "My profile",
+      "cv": "My CV",
+      "generationCv": "CV generation",
+      "jobSearch": "Search jobs",
+      "recommendations": "AI recommendations",
+      "applications": "My applications",
+      "interviews": "Interviews",
+      "messaging": "Messaging",
+      "favorites": "Saved jobs",
+      "notifications": "Notifications",
+      "settings": "Settings",
+      "generateCv": "Generate my CV"
+    },
+    "searchPlaceholder": "Search a job or company...",
+    "profile": {
+      "settings": "Settings",
+      "logout": "Log out"
+    },
+    "theme": {
+      "light": "Light mode",
+      "dark": "Dark mode"
+    },
+    "userDefault": "User",
+    "role": "Candidate"
+  },
 
   "login": {
     "tagline": "Your opportunity starts here",

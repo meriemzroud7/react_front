@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   FiGrid, FiUser, FiFileText, FiMail, FiSearch, FiZap,
   FiBriefcase, FiVideo, FiMessageSquare, FiBookmark, FiBell,
-  FiSettings, FiLogOut, FiMenu, FiX, FiChevronDown
+  FiSettings, FiLogOut, FiMenu, FiX, FiChevronDown,
+  FiMoon, FiSun
 } from 'react-icons/fi';
 import '../styles/recruteur-layout.css';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
 import CoachChatWidget from '../composant/CoachChatWidget';
+import LanguageSwitcher from '../composant/LanguageSwitcher';
+import { getAllOffres } from '../services/apiServiceOffres';
+import { filterOffersByQuery } from '../utils/searchOffers';
+
+const API_ORIGIN = 'http://localhost:8080';
 
 // Petits utilitaires pour afficher dynamiquement les infos de l'utilisateur connecté
 // (au lieu de valeurs codées en dur). Tolère plusieurs formats de champs possibles
 // selon ce que renvoie le backend Spring Boot (ex: nom/prenom, firstName/lastName...).
-function getUserDisplayName(user) {
-  if (!user) return 'Utilisateur';
+function getUserDisplayName(user, fallback = 'Utilisateur') {
+  if (!user) return fallback;
   const first = user.prenom || user.firstName || user.first_name;
   const last = user.nom || user.lastName || user.last_name;
   if (first && last) return `${first} ${last}`;
@@ -21,15 +29,15 @@ function getUserDisplayName(user) {
   if (user.nomComplet) return user.nomComplet;
   if (user.name) return user.name;
   if (user.email) return user.email.split('@')[0];
-  return 'Utilisateur';
+  return fallback;
 }
 
-function getUserInitials(user) {
-  const name = getUserDisplayName(user);
+function getUserInitials(user, fallback = 'U') {
+  const name = getUserDisplayName(user, fallback);
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return 'U';
+  return fallback.slice(0, 2).toUpperCase() || 'U';
 }
 
 const ROLE_LABELS = { CANDIDAT: 'Candidat(e)', RECRUTEUR: 'Recruteur', ADMIN: 'Administrateur' };
@@ -40,31 +48,83 @@ function getUserRoleLabel(user, fallback = '') {
 }
 
 const NAV_ITEMS = [
-  { to: '/candidat', icon: <FiGrid />, label: 'Tableau de bord', end: true },
-  { to: '/candidat/profil', icon: <FiUser />, label: 'Mon profil' },
-  { to: '/candidat/cv', icon: <FiFileText />, label: 'Mon CV' },
-  { to: '/candidat/lettres', icon: <FiMail />, label: 'Géneration de Cv' },
-  { to: '/candidat/offres', icon: <FiSearch />, label: 'Rechercher des offres' },
-  { to: '/candidat/recommandations', icon: <FiZap />, label: 'Recommandations IA' },
-  { to: '/candidat/candidatures', icon: <FiBriefcase />, label: 'Mes candidatures' },
-  { to: '/candidat/entretiens', icon: <FiVideo />, label: 'Entretiens' },
-  { to: '/candidat/messagerie', icon: <FiMessageSquare />, label: 'Messagerie' },
-  { to: '/candidat/favoris', icon: <FiBookmark />, label: 'Offres sauvegardées' },
-  { to: '/candidat/notifications', icon: <FiBell />, label: 'Notifications' },
-  { to: '/candidat/parametres', icon: <FiSettings />, label: 'Paramètres' },
-  { to: '/candidat/generer-cv', icon: <FiFileText />, label: 'Générer mon CV' }
-  
+  { to: '/candidat', icon: <FiGrid />, label: 'candidat.menu.dashboard', end: true },
+  { to: '/candidat/profil', icon: <FiUser />, label: 'candidat.menu.profile' },
+  { to: '/candidat/cv', icon: <FiFileText />, label: 'candidat.menu.cv' },
+  { to: '/candidat/lettres', icon: <FiMail />, label: 'candidat.menu.generationCv' },
+  { to: '/candidat/offres', icon: <FiSearch />, label: 'candidat.menu.jobSearch' },
+  { to: '/candidat/recommandations', icon: <FiZap />, label: 'candidat.menu.recommendations' },
+  { to: '/candidat/candidatures', icon: <FiBriefcase />, label: 'candidat.menu.applications' },
+  { to: '/candidat/entretiens', icon: <FiVideo />, label: 'candidat.menu.interviews' },
+  { to: '/candidat/messagerie', icon: <FiMessageSquare />, label: 'candidat.menu.messaging' },
+  { to: '/candidat/favoris', icon: <FiBookmark />, label: 'candidat.menu.favorites' },
+  { to: '/candidat/notifications', icon: <FiBell />, label: 'candidat.menu.notifications' },
+  { to: '/candidat/parametres', icon: <FiSettings />, label: 'candidat.menu.settings' },
+  { to: '/candidat/generer-cv', icon: <FiFileText />, label: 'candidat.menu.generateCv' }
 ];
 
 export default function CandidatLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [offers, setOffers] = useState([]);
+  const [loadingOffers, setLoadingOffers] = useState(false);
+  const searchBoxRef = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
-  const displayName = getUserDisplayName(user);
-  const initials = getUserInitials(user);
-  const roleLabel = getUserRoleLabel(user, 'Candidat(e)');
+  const displayName = getUserDisplayName(user, t('candidat.userDefault'));
+  const initials = getUserInitials(user, t('candidat.userDefault'));
+  const roleLabel = getUserRoleLabel(user, t('candidat.role'));
+  const photoUrl = user?.image ? `${API_ORIGIN}/${user.image}` : null;
+
+  useEffect(() => {
+    async function loadOffers() {
+      try {
+        setLoadingOffers(true);
+        const response = await getAllOffres();
+        setOffers(response?.data || []);
+      } catch (error) {
+        console.error('Erreur lors du chargement des offres pour la recherche:', error);
+      } finally {
+        setLoadingOffers(false);
+      }
+    }
+
+    loadOffers();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchBoxRef.current && !searchBoxRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const matchingOffers = filterOffersByQuery(offers, searchQuery).slice(0, 5);
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) {
+      setSearchOpen(false);
+      return;
+    }
+
+    if (matchingOffers.length > 0) {
+      navigate(`/candidat/offres/${matchingOffers[0].id}`);
+    } else {
+      navigate('/candidat/offres');
+    }
+    setSearchOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
@@ -82,7 +142,7 @@ export default function CandidatLayout() {
           <img src="/logof.png" alt="Fursa" className="rl-sidebar__logo-icon" />
           <div>
             <div className="rl-sidebar__logo-arabic">فرصة</div>
-            <div className="rl-sidebar__logo-sub">Espace Candidat</div>
+            <div className="rl-sidebar__logo-sub">{t('candidat.logoSubtitle')}</div>
           </div>
           <button className="rl-sidebar__close" onClick={() => setSidebarOpen(false)}>
             <FiX />
@@ -90,7 +150,7 @@ export default function CandidatLayout() {
         </div>
 
         <nav className="rl-sidebar__nav">
-          <p className="rl-sidebar__section-label">Principal</p>
+          <p className="rl-sidebar__section-label">{t('candidat.group.main')}</p>
           {NAV_ITEMS.slice(0, 4).map(item => (
             <NavLink
               key={item.to}
@@ -100,11 +160,11 @@ export default function CandidatLayout() {
               onClick={() => setSidebarOpen(false)}
             >
               <span className="rl-nav-item__icon">{item.icon}</span>
-              <span>{item.label}</span>
+              <span>{t(item.label)}</span>
             </NavLink>
           ))}
 
-          <p className="rl-sidebar__section-label">Opportunités</p>
+          <p className="rl-sidebar__section-label">{t('candidat.group.opportunities')}</p>
           {NAV_ITEMS.slice(4, 8).map(item => (
             <NavLink
               key={item.to}
@@ -113,11 +173,11 @@ export default function CandidatLayout() {
               onClick={() => setSidebarOpen(false)}
             >
               <span className="rl-nav-item__icon">{item.icon}</span>
-              <span>{item.label}</span>
+              <span>{t(item.label)}</span>
             </NavLink>
           ))}
 
-          <p className="rl-sidebar__section-label">Compte</p>
+          <p className="rl-sidebar__section-label">{t('candidat.group.account')}</p>
           {NAV_ITEMS.slice(8).map(item => (
             <NavLink
               key={item.to}
@@ -126,14 +186,23 @@ export default function CandidatLayout() {
               onClick={() => setSidebarOpen(false)}
             >
               <span className="rl-nav-item__icon">{item.icon}</span>
-              <span>{item.label}</span>
+              <span>{t(item.label)}</span>
             </NavLink>
           ))}
         </nav>
 
         <div className="rl-sidebar__footer">
           <div className="rl-sidebar__user">
-            <div className="rl-sidebar__user-avatar">{initials}</div>
+            {photoUrl ? (
+              <img
+                src={photoUrl}
+                alt={displayName}
+                className="rl-sidebar__user-avatar"
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <div className="rl-sidebar__user-avatar">{initials}</div>
+            )}
             <div className="rl-sidebar__user-info">
               <div className="rl-sidebar__user-name">{displayName}</div>
               <div className="rl-sidebar__user-role">{roleLabel}</div>
@@ -151,25 +220,80 @@ export default function CandidatLayout() {
             <FiMenu />
           </button>
 
-          <div className="rl-topbar__search">
+          <form className="rl-topbar__search" ref={searchBoxRef} onSubmit={handleSearchSubmit}>
             <FiSearch className="rl-topbar__search-icon" />
-            <input placeholder="Rechercher une offre, une entreprise..." />
-          </div>
+            <input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              placeholder={t('candidat.searchPlaceholder')}
+            />
+
+            {searchOpen && searchQuery.trim() && (
+              <div className="rl-search-results">
+                {loadingOffers && <div className="rl-search-results__item">Chargement des offres...</div>}
+
+                {!loadingOffers && matchingOffers.length === 0 && (
+                  <div className="rl-search-results__item">Aucune offre trouvée pour « {searchQuery} »</div>
+                )}
+
+                {!loadingOffers && matchingOffers.map((offer) => (
+                  <button
+                    key={offer.id}
+                    type="button"
+                    className="rl-search-results__item"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      navigate(`/candidat/offres/${offer.id}`);
+                      setSearchOpen(false);
+                      setSearchQuery('');
+                    }}
+                  >
+                    <span className="rl-search-results__title">{offer.titre}</span>
+                    <span className="rl-search-results__meta">{offer.nomEntreprise || offer.entreprise || 'Entreprise'}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </form>
 
           <div className="rl-topbar__right">
+            <LanguageSwitcher />
+
+            <button
+              className="rl-topbar__theme"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? t('candidat.theme.light') : t('candidat.theme.dark')}
+              title={theme === 'dark' ? t('candidat.theme.light') : t('candidat.theme.dark')}
+            >
+              {theme === 'dark' ? <FiSun /> : <FiMoon />}
+            </button>
+
             <NavLink to="/candidat/notifications" className="rl-topbar__notif">
               <FiBell />
               <span className="rl-topbar__notif-badge">3</span>
             </NavLink>
 
             <div className="rl-topbar__profile" onClick={() => setProfileOpen(!profileOpen)}>
-              <div className="rl-topbar__profile-avatar">{initials}</div>
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt={displayName}
+                  className="rl-topbar__profile-avatar"
+                  style={{ objectFit: 'cover' }}
+                />
+              ) : (
+                <div className="rl-topbar__profile-avatar">{initials}</div>
+              )}
               <span className="rl-topbar__profile-name">{displayName}</span>
               <FiChevronDown size={14} />
               {profileOpen && (
                 <div className="rl-topbar__profile-menu">
-                  <NavLink to="/candidat/parametres">Paramètres</NavLink>
-                  <a href="/" onClick={handleLogout}>Se déconnecter</a>
+                  <NavLink to="/candidat/parametres">{t('candidat.profile.settings')}</NavLink>
+                  <a href="/" onClick={(e) => { e.preventDefault(); handleLogout(); }}>{t('candidat.profile.logout')}</a>
                 </div>
               )}
             </div>

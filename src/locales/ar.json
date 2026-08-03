@@ -101,6 +101,40 @@
     "userDefault": "المستخدم",
     "role": "مدير الموارد البشرية"
   },
+  "candidat": {
+    "logoSubtitle": "مساحة المرشح",
+    "group": {
+      "main": "أساسي",
+      "opportunities": "الفرص",
+      "account": "الحساب"
+    },
+    "menu": {
+      "dashboard": "لوحة التحكم",
+      "profile": "ملفي الشخصي",
+      "cv": "سيرتي الذاتية",
+      "generationCv": "إنشاء السيرة الذاتية",
+      "jobSearch": "البحث عن وظائف",
+      "recommendations": "توصيات الذكاء الاصطناعي",
+      "applications": "طلباتي",
+      "interviews": "المقابلات",
+      "messaging": "المراسلة",
+      "favorites": "الوظائف المحفوظة",
+      "notifications": "الإشعارات",
+      "settings": "الإعدادات",
+      "generateCv": "إنشاء سيرتي الذاتية"
+    },
+    "searchPlaceholder": "ابحث عن وظيفة أو شركة...",
+    "profile": {
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "theme": {
+      "light": "الوضع الفاتح",
+      "dark": "الوضع الداكن"
+    },
+    "userDefault": "المستخدم",
+    "role": "مرشح"
+  },
 
   "login": {
     "tagline": "فرصتك تبدأ هنا",

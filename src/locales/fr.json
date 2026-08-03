@@ -101,6 +101,40 @@
     "userDefault": "Utilisateur",
     "role": "Responsable RH"
   },
+  "candidat": {
+    "logoSubtitle": "Espace Candidat",
+    "group": {
+      "main": "Principal",
+      "opportunities": "Opportunités",
+      "account": "Compte"
+    },
+    "menu": {
+      "dashboard": "Tableau de bord",
+      "profile": "Mon profil",
+      "cv": "Mon CV",
+      "generationCv": "Génération de CV",
+      "jobSearch": "Rechercher des offres",
+      "recommendations": "Recommandations IA",
+      "applications": "Mes candidatures",
+      "interviews": "Entretiens",
+      "messaging": "Messagerie",
+      "favorites": "Offres sauvegardées",
+      "notifications": "Notifications",
+      "settings": "Paramètres",
+      "generateCv": "Générer mon CV"
+    },
+    "searchPlaceholder": "Rechercher une offre, une entreprise...",
+    "profile": {
+      "settings": "Paramètres",
+      "logout": "Se déconnecter"
+    },
+    "theme": {
+      "light": "Mode clair",
+      "dark": "Mode sombre"
+    },
+    "userDefault": "Utilisateur",
+    "role": "Candidat(e)"
+  },
 
   "login": {
     "tagline": "فرصتك تبدأ هنا",
