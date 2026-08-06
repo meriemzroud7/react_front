@@ -97,6 +97,9 @@
   background: var(--primary); display: flex; align-items: center; justify-content: center;
   font-size: 0.75rem; font-weight: 700; color: var(--sidebar-text); flex-shrink: 0;
 }
+.al-sidebar__user-avatar-img {
+  width: 34px; height: 34px; border-radius: 50%; object-fit: cover; display: block; flex-shrink: 0;
+}
 .al-sidebar__user-name { font-size: 0.82rem; font-weight: 600; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .al-sidebar__user-role { font-size: 0.68rem; color: var(--sidebar-muted); }
 .al-sidebar__logout {
@@ -175,6 +178,9 @@
   background: var(--primary); color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 0.72rem; font-weight: 700;
+}
+.al-topbar__profile-avatar-img {
+  width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;
 }
 .al-topbar__profile-name { font-size: 0.85rem; font-weight: 600; color: var(--foreground); }
 .al-topbar__profile-menu {
