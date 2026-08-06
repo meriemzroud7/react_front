@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   { to: '/recruteur/entretiens', icon: <FiVideo />, label: 'recruteur.menu.entretiens' },
   { to: '/recruteur/calendrier', icon: <FiCalendar />, label: 'recruteur.menu.calendar' },
   { to: '/recruteur/messagerie', icon: <FiMessageSquare />, label: 'recruteur.menu.messaging' },
+  { to: '/recruteur/notifications', icon: <FiBell />, label: 'recruteur.menu.notifications' },
   { to: '/recruteur/rapports', icon: <FiBarChart2 />, label: 'recruteur.menu.reports' },
   { to: '/recruteur/parametres', icon: <FiSettings />, label: 'recruteur.menu.settings' },
 ];
