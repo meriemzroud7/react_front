@@ -67,6 +67,7 @@ import AdminNotifications from '../pages/admin/Notifications';
 import AdminParametres from '../pages/admin/Parametres';
 import AdminLogs from '../pages/admin/Logs';
 import AdminMaintenance from '../pages/admin/Maintenance';
+import AdminProfil from '../pages/admin/Profil';
 
 function AppRoutes() {
   return (
@@ -102,6 +103,7 @@ function AppRoutes() {
         <Route path="rapports" element={<AdminRapports />} />
         <Route path="notifications" element={<AdminNotifications />} />
         <Route path="parametres" element={<AdminParametres />} />
+        <Route path="profil" element={<AdminProfil />} />
         <Route path="logs" element={<AdminLogs />} />
         <Route path="maintenance" element={<AdminMaintenance />} />
       </Route>

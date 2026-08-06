@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  FiGrid, FiUsers, FiBriefcase, FiFileText, FiClipboard,
-  FiCalendar, FiLayers, FiAward, FiCpu, FiFlag,
-  FiBarChart2, FiBell, FiSettings, FiActivity, FiDatabase,
+  FiGrid, FiUsers, FiFileText, FiClipboard,
+  FiCalendar,
+   FiBell, FiSettings, FiActivity, 
   FiLogOut, FiMenu, FiX, FiSearch, FiChevronDown, FiMoon, FiSun,
   FiUser as FiCandidatIcon, FiClipboard as FiCandidatureIcon
 } from 'react-icons/fi';
@@ -19,23 +19,16 @@ import CandidatureService from '../services/apiServiceCandidature';
 const NAV_ITEMS = [
   { to: '/admin', icon: <FiGrid />, labelKey: 'dashboard', end: true, group: 'Principal' },
   { to: '/admin/utilisateurs', icon: <FiUsers />, labelKey: 'utilisateurs', group: 'Principal' },
-  { to: '/admin/entreprises', icon: <FiBriefcase />, labelKey: 'entreprises', group: 'Principal' },
+  { to: '/admin/profil', icon: <FiCandidatIcon />, labelKey: 'profil', group: 'Principal' },
 
   { to: '/admin/offres', icon: <FiFileText />, labelKey: 'offres', group: 'Recrutement' },
   { to: '/admin/candidatures', icon: <FiClipboard />, labelKey: 'candidatures', group: 'Recrutement' },
   { to: '/admin/entretiens', icon: <FiCalendar />, labelKey: 'entretiens', group: 'Recrutement' },
 
-  { to: '/admin/referentiels', icon: <FiLayers />, labelKey: 'referentiels', group: 'Configuration' },
-  { to: '/admin/competences', icon: <FiAward />, labelKey: 'competences', group: 'Configuration' },
-  { to: '/admin/ia', icon: <FiCpu />, labelKey: 'ia', group: 'Configuration' },
-
-  { to: '/admin/signalements', icon: <FiFlag />, labelKey: 'signalements', group: 'Suivi' },
-  { to: '/admin/rapports', icon: <FiBarChart2 />, labelKey: 'rapports', group: 'Suivi' },
   { to: '/admin/notifications', icon: <FiBell />, labelKey: 'notifications', group: 'Suivi' },
 
   { to: '/admin/parametres', icon: <FiSettings />, labelKey: 'parametres', group: 'Système' },
   { to: '/admin/logs', icon: <FiActivity />, labelKey: 'logs', group: 'Système' },
-  { to: '/admin/maintenance', icon: <FiDatabase />, labelKey: 'maintenance', group: 'Système' },
 ];
 
 const GROUPS = ['Principal', 'Recrutement', 'Configuration', 'Suivi', 'Système'];
@@ -59,11 +52,20 @@ export default function AdminLayout() {
   const initials = user
     ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase() || 'AD'
     : 'AD';
+  const avatarUrl = user?.avatar || user?.avatarUrl || user?.photo || user?.image || user?.profilePicture || '';
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  const platformLogo = (() => {
+    try {
+      return localStorage.getItem('platform_logo') || '/logof.png';
+    } catch (e) {
+      return '/logof.png';
+    }
+  })();
 
   // ── Recherche globale (utilisateurs + offres + candidatures) ───────────
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,7 +164,7 @@ export default function AdminLayout() {
 
       <aside className={`al-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="al-sidebar__logo">
-          <img src="/logof.png" alt="Fursa" className="al-sidebar__logo-icon" />
+          <img src={platformLogo} alt="Fursa" className="al-sidebar__logo-icon" />
           <div>
             <div className="al-sidebar__logo-arabic">فرصة</div>
             <div className="al-sidebar__logo-sub">{t('admin.logoSubtitle')}</div>
@@ -194,7 +196,11 @@ export default function AdminLayout() {
 
         <div className="al-sidebar__footer">
           <div className="al-sidebar__user">
-            <div className="al-sidebar__user-avatar">{initials}</div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={fullName} className="al-sidebar__user-avatar-img" />
+            ) : (
+              <div className="al-sidebar__user-avatar">{initials}</div>
+            )}
             <div className="al-sidebar__user-info">
               <div className="al-sidebar__user-name">{fullName}</div>
               <div className="al-sidebar__user-role">{t('admin.role')}</div>
@@ -331,7 +337,11 @@ export default function AdminLayout() {
             </NavLink>
 
             <div className="al-topbar__profile" onClick={() => setProfileOpen(!profileOpen)}>
-              <div className="al-topbar__profile-avatar">{initials}</div>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={fullName} className="al-topbar__profile-avatar-img" />
+              ) : (
+                <div className="al-topbar__profile-avatar">{initials}</div>
+              )}
               <span className="al-topbar__profile-name">{fullName}</span>
               <FiChevronDown size={14} />
               {profileOpen && (

@@ -204,6 +204,7 @@
     "menu": {
       "dashboard": "Dashboard",
       "utilisateurs": "Users",
+      "profil": "Profile",
       "entreprises": "Companies",
       "offres": "Job postings",
       "candidatures": "Applications",

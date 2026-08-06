@@ -204,6 +204,7 @@
     "menu": {
       "dashboard": "Tableau de bord",
       "utilisateurs": "Utilisateurs",
+      "profil": "Profil",
       "entreprises": "Entreprises",
       "offres": "Offres d'emploi",
       "candidatures": "Candidatures",

@@ -204,6 +204,7 @@
     "menu": {
       "dashboard": "لوحة التحكم",
       "utilisateurs": "المستخدمون",
+      "profil": "الملف الشخصي",
       "entreprises": "الشركات",
       "offres": "عروض العمل",
       "candidatures": "الترشيحات",
