@@ -14,12 +14,10 @@ import CoachChatWidget from '../composant/CoachChatWidget';
 import LanguageSwitcher from '../composant/LanguageSwitcher';
 import { getAllOffres } from '../services/apiServiceOffres';
 import { filterOffersByQuery } from '../utils/searchOffers';
+import { getUnreadCount } from '../services/apiServiceNotification';
 
 const API_ORIGIN = 'http://localhost:8080';
 
-// Petits utilitaires pour afficher dynamiquement les infos de l'utilisateur connecté
-// (au lieu de valeurs codées en dur). Tolère plusieurs formats de champs possibles
-// selon ce que renvoie le backend Spring Boot (ex: nom/prenom, firstName/lastName...).
 function getUserDisplayName(user, fallback = 'Utilisateur') {
   if (!user) return fallback;
   const first = user.prenom || user.firstName || user.first_name;
@@ -130,6 +128,23 @@ export default function CandidatLayout() {
     logout();
     navigate('/');
   };
+
+  // ── Compteur de notifications non lues (badge sur la cloche) ──────────
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUnreadCount = () => {
+      getUnreadCount(user.id)
+        .then(({ data }) => setUnreadCount(data.count || 0))
+        .catch((err) => console.error('Erreur lors du chargement des notifications non lues', err));
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000); // rafraîchit toutes les 30s
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   return (
     <div className="rl-root">
@@ -274,7 +289,9 @@ export default function CandidatLayout() {
 
             <NavLink to="/candidat/notifications" className="rl-topbar__notif">
               <FiBell />
-              <span className="rl-topbar__notif-badge">3</span>
+              {unreadCount > 0 && (
+                <span className="rl-topbar__notif-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
             </NavLink>
 
             <div className="rl-topbar__profile" onClick={() => setProfileOpen(!profileOpen)}>

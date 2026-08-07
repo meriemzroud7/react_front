@@ -12,6 +12,7 @@ import {
 import LanguageSwitcher from '../composant/LanguageSwitcher';
 import { getOffresByRecruteur } from '../services/apiServiceOffres';
 import CandidatureService from '../services/apiServiceCandidature';
+import { getUnreadCount } from '../services/apiServiceNotification';
 import '../styles/recruteur-layout.css';
 
 const API_ORIGIN = 'http://localhost:8080';
@@ -66,6 +67,23 @@ export default function RecruteurLayout() {
     logout();
     navigate('/');
   };
+
+  // ── Compteur de notifications non lues (badge sur la cloche) ──────────
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchUnreadCount = () => {
+      getUnreadCount(user.id)
+        .then(({ data }) => setUnreadCount(data.count || 0))
+        .catch((err) => console.error('Erreur lors du chargement des notifications non lues', err));
+    };
+
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000); // rafraîchit toutes les 30s
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   // ── Recherche globale (offres + candidatures) ───────────────────
   const [searchQuery, setSearchQuery] = useState('');
@@ -349,10 +367,12 @@ export default function RecruteurLayout() {
               {theme === 'dark' ? <FiSun /> : <FiMoon />}
             </button>
 
-            <button className="rl-topbar__notif">
+            <NavLink to="/recruteur/notifications" className="rl-topbar__notif">
               <FiBell />
-              <span className="rl-topbar__notif-badge">4</span>
-            </button>
+              {unreadCount > 0 && (
+                <span className="rl-topbar__notif-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+            </NavLink>
 
             <div className="rl-topbar__profile" onClick={() => setProfileOpen(!profileOpen)}>
               {photoUrl ? (
