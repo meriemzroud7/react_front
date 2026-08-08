@@ -52,8 +52,7 @@ export default function AdminLayout() {
   const initials = user
     ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase() || 'AD'
     : 'AD';
-  const avatarUrl = user?.avatar || user?.avatarUrl || user?.photo || user?.image || user?.profilePicture || '';
-
+const avatarUrl = user?.image ? `http://localhost:8080/${user.image}` : '';
   const handleLogout = () => {
     logout();
     navigate('/');
