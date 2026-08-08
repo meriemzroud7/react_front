@@ -12,6 +12,8 @@ import {
   subscribeToUserStatus,
   sendChatMessage,
   sendReadReceipt,
+  sendEditMessage,
+  sendDeleteMessage,
   disconnectWebSocket,
 } from '../../services/websocketMessagerie';
 import { getUserById, getUsers } from '../../services/apiServiceUser';
@@ -73,6 +75,7 @@ export default function Messaging() {
   const [showNewChat, setShowNewChat] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState(null);
   const endRef = useRef(null);
 
   const activeConv = conversations.find((c) => c.conversationId === activeConvId);
@@ -123,7 +126,7 @@ export default function Messaging() {
     })();
   }, [currentUserId]);
 
-  // ---- connexion websocket : reception des messages + statut en ligne ----
+  // ---- connexion websocket : reception des messages + statut en ligne + edition/suppression ----
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -156,6 +159,22 @@ export default function Messaging() {
               : c
           )
         );
+      },
+      onMessageEdited: (updatedMessage) => {
+        setMessages((prev) => ({
+          ...prev,
+          [updatedMessage.conversationId]: (prev[updatedMessage.conversationId] || []).map((m) =>
+            m.id === updatedMessage.id ? { ...m, content: updatedMessage.content, edited: true } : m
+          ),
+        }));
+      },
+      onMessageDeleted: ({ conversationId, messageId }) => {
+        setMessages((prev) => ({
+          ...prev,
+          [conversationId]: (prev[conversationId] || []).map((m) =>
+            m.id === messageId ? { ...m, content: null, deleted: true } : m
+          ),
+        }));
       },
     });
 
@@ -232,7 +251,12 @@ export default function Messaging() {
     [conversations, currentUserId, openConversation]
   );
 
+  // ---- envoi normal ou confirmation d'edition selon le contexte ----
   const send = () => {
+    if (editingMessageId) {
+      confirmEditMessage();
+      return;
+    }
     if (!input.trim() || !activeConv) return;
 
     sendChatMessage({
@@ -245,6 +269,58 @@ export default function Messaging() {
 
     setInput('');
     setShowTemplates(false);
+  };
+
+  // ---- passage en mode edition d'un message existant ----
+  const startEditMessage = (message) => {
+    setEditingMessageId(message.id);
+    setInput(message.content);
+  };
+
+  // ---- confirmation de l'edition (envoi via websocket + maj optimiste locale) ----
+  const confirmEditMessage = () => {
+    if (!input.trim() || !editingMessageId || !activeConv) return;
+
+    sendEditMessage({
+      messageId: editingMessageId,
+      conversationId: activeConvId,
+      editorId: currentUserId,
+      newContent: input.trim(),
+    });
+
+    setMessages((prev) => ({
+      ...prev,
+      [activeConvId]: (prev[activeConvId] || []).map((m) =>
+        m.id === editingMessageId ? { ...m, content: input.trim(), edited: true } : m
+      ),
+    }));
+
+    setEditingMessageId(null);
+    setInput('');
+  };
+
+  // ---- annulation du mode edition ----
+  const cancelEdit = () => {
+    setEditingMessageId(null);
+    setInput('');
+  };
+
+  // ---- suppression d'un message (envoi via websocket + maj optimiste locale) ----
+  const deleteMessage = (message) => {
+    if (!window.confirm('Supprimer ce message ?')) return;
+
+    sendDeleteMessage({
+      messageId: message.id,
+      conversationId: activeConvId,
+      requesterId: currentUserId,
+    });
+
+    setMessages((prev) => ({
+      ...prev,
+      [activeConvId]: (prev[activeConvId] || []).map((m) =>
+        m.id === message.id ? { ...m, content: null, deleted: true } : m
+      ),
+    }));
   };
 
   if (!currentUserId) {
@@ -333,7 +409,7 @@ export default function Messaging() {
         </div>
 
         {/* Chat area */}
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem 1.25rem', borderBottom: '1px solid var(--border-light)' }}>
             <div className="rp-avatar" style={{ width: 38, height: 38, background: activeConv?.color, fontSize: '0.8rem', flexShrink: 0 }}>{activeConv?.avatar}</div>
@@ -347,17 +423,49 @@ export default function Messaging() {
           </div>
 
           {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {msgs.map((m) => (
-              <div key={m.id ?? `${m.senderId}-${m.timestamp}`} style={{ display: 'flex', flexDirection: m.senderId === currentUserId ? 'row-reverse' : 'row', gap: '0.5rem', alignItems: 'flex-end' }}>
+              <div
+                key={m.id ?? `${m.senderId}-${m.timestamp}`}
+                className="rp-message-row"
+                style={{ display: 'flex', flexDirection: m.senderId === currentUserId ? 'row-reverse' : 'row', gap: '0.5rem', alignItems: 'flex-end' }}
+              >
                 {m.senderId !== currentUserId && <div className="rp-avatar" style={{ width: 28, height: 28, background: activeConv?.color, fontSize: '0.6rem', flexShrink: 0 }}>{activeConv?.avatar}</div>}
-                <div style={{
-                  maxWidth: '75%', padding: '0.65rem 0.9rem', borderRadius: 14, fontSize: '0.85rem', lineHeight: 1.5,
-                  background: m.senderId === currentUserId ? 'var(--primary)' : 'var(--background)',
-                  color: m.senderId === currentUserId ? '#fff' : 'var(--foreground)',
-                  borderBottomRightRadius: m.senderId === currentUserId ? 4 : 14,
-                  borderBottomLeftRadius: m.senderId !== currentUserId ? 4 : 14,
-                }}>{m.content}</div>
+                <div style={{ display: 'flex', flexDirection: m.senderId === currentUserId ? 'row-reverse' : 'row', alignItems: 'center', gap: '0.35rem' }}>
+                  <div style={{
+                    maxWidth: '75%', padding: '0.65rem 0.9rem', borderRadius: 14, fontSize: '0.85rem', lineHeight: 1.5,
+                    background: m.senderId === currentUserId ? 'var(--primary)' : 'var(--background)',
+                    color: m.senderId === currentUserId ? '#fff' : 'var(--foreground)',
+                    borderBottomRightRadius: m.senderId === currentUserId ? 4 : 14,
+                    borderBottomLeftRadius: m.senderId !== currentUserId ? 4 : 14,
+                    fontStyle: m.deleted ? 'italic' : 'normal',
+                    opacity: m.deleted ? 0.6 : 1,
+                  }}>
+                    {m.deleted ? 'Message supprimé' : m.content}
+                    {m.edited && !m.deleted && (
+                      <span style={{ fontSize: '0.65rem', opacity: 0.7, marginLeft: 6 }}>(modifié)</span>
+                    )}
+                  </div>
+
+                  {m.senderId === currentUserId && !m.deleted && (
+                    <div className="rp-message-actions" style={{ display: 'flex', gap: '0.25rem' }}>
+                      <button
+                        onClick={() => startEditMessage(m)}
+                        title="Modifier"
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}
+                      >
+                        <FiEdit size={12} />
+                      </button>
+                      <button
+                        onClick={() => deleteMessage(m)}
+                        title="Supprimer"
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--danger, #dc2626)', fontSize: '0.7rem' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
             <div ref={endRef} />
@@ -365,7 +473,7 @@ export default function Messaging() {
 
           {/* Templates */}
           {showTemplates && (
-            <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border-light)', background: 'var(--background)' }}>
+            <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid var(--border-light)', background: 'var(--background)', maxHeight: '35vh', overflowY: 'auto' }}>
               <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--muted)', marginBottom: '0.5rem' }}>Modèles de messages</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                 {TEMPLATES.map((t, i) => (
@@ -379,12 +487,27 @@ export default function Messaging() {
           )}
 
           {/* Input */}
-          <div style={{ display: 'flex', gap: '0.5rem', padding: '0.75rem 96px 0.75rem 1rem', borderTop: '1px solid var(--border-light)', background: '#fff' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', padding: '0.75rem 1rem', borderTop: '1px solid var(--border-light)', background: '#fff', flexShrink: 0 }}>
             <button className="rp-btn rp-btn--outline rp-btn--icon" onClick={() => setShowTemplates(!showTemplates)} title="Modèles">
               <FiMail size={15} />
             </button>
-            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder="Écrire un message..." style={{ flex: 1, border: '1.5px solid var(--border)', borderRadius: 100, padding: '0.55rem 1rem', fontSize: '0.85rem', outline: 'none', fontFamily: 'var(--font)', transition: 'border-color 0.2s' }} onFocus={e => e.target.style.borderColor = 'var(--primary)'} onBlur={e => e.target.style.borderColor = 'var(--border)'} />
-            <button onClick={send} className="rp-btn rp-btn--primary rp-btn--icon"><FiSend size={15} /></button>
+            {editingMessageId && (
+              <button className="rp-btn rp-btn--outline rp-btn--sm" onClick={cancelEdit} title="Annuler la modification">
+                Annuler
+              </button>
+            )}
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && send()}
+              placeholder={editingMessageId ? 'Modifier le message...' : 'Écrire un message...'}
+              style={{ flex: 1, border: '1.5px solid var(--border)', borderRadius: 100, padding: '0.55rem 1rem', fontSize: '0.85rem', outline: 'none', fontFamily: 'var(--font)', transition: 'border-color 0.2s' }}
+              onFocus={e => e.target.style.borderColor = 'var(--primary)'}
+              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            />
+            <button onClick={send} className="rp-btn rp-btn--primary rp-btn--icon">
+              <FiSend size={15} />
+            </button>
           </div>
         </div>
       </div>
