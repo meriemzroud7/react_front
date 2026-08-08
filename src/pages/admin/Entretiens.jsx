@@ -1,16 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FiSearch, FiEye, FiEdit2, FiXCircle, FiRefreshCw, FiClipboard, FiVideo, FiMapPin } from 'react-icons/fi';
-import CandidatureService from '../../services/apiServiceCandidature'; // pour getUsersByIds
-import { getOffreById } from '../../services/apiServiceOffres';
+import { FiSearch, FiEye, FiEdit2, FiXCircle, FiRefreshCw, FiClipboard, FiVideo, FiMapPin, FiUsers } from 'react-icons/fi';
 import {
   getEntretiens,
   modifierEntretien,
   changerStatut,
   enregistrerEvaluation,
-} from '../../services/apiServiceEntretien'; // adapte le chemin selon ton projet
+} from '../../services/apiServiceEntretien';
 
-// --- Mapping statut backend <-> libellé affiché ---
-// Adapte les clés à gauche à ton enum StatutEntretien exact côté Java
 const STATUT_BACKEND_TO_LABEL = {
   PROGRAMME: 'Programmé',
   CONFIRME: 'Confirmé',
@@ -19,7 +15,6 @@ const STATUT_BACKEND_TO_LABEL = {
   ANNULE: 'Annulé',
 };
 
-// --- Mapping type backend <-> libellé affiché ---
 const TYPE_BACKEND_TO_LABEL = {
   ONLINE: 'En ligne',
   EN_LIGNE: 'En ligne',
@@ -28,46 +23,13 @@ const TYPE_BACKEND_TO_LABEL = {
 
 function statusToBadge(label) {
   switch (label) {
-    case 'Programmé':
-      return 'blue';
-    case 'Confirmé':
-      return 'green';
-    case 'En cours':
-      return 'amber';
-    case 'Terminé':
-      return 'gray';
-    case 'Annulé':
-      return 'red';
-    default:
-      return 'gray';
+    case 'Programmé': return 'blue';
+    case 'Confirmé': return 'green';
+    case 'En cours': return 'amber';
+    case 'Terminé': return 'gray';
+    case 'Annulé': return 'red';
+    default: return 'gray';
   }
-}
-
-function extractEntreprise(offre) {
-  if (!offre) return '-';
-  return (
-    offre.entreprise?.nom ||
-    (typeof offre.entreprise === 'string' ? offre.entreprise : null) ||
-    offre.entrepriseNom ||
-    offre.nomEntreprise ||
-    offre.company ||
-    '-'
-  );
-}
-
-function splitDateHeure(entretien) {
-  // Gère soit un champ unique dateEntretien (ISO datetime), soit deux champs séparés date/heure
-  if (entretien.date && entretien.heure) {
-    return { date: entretien.date, heure: entretien.heure };
-  }
-  const raw = entretien.dateEntretien || entretien.dateHeure;
-  if (!raw) return { date: '-', heure: '-' };
-  const d = new Date(raw);
-  if (isNaN(d.getTime())) return { date: raw, heure: '-' };
-  return {
-    date: d.toLocaleDateString('fr-FR'),
-    heure: d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-  };
 }
 
 export default function Entretiens() {
@@ -75,6 +37,7 @@ export default function Entretiens() {
   const [entretiens, setEntretiens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [entretienSelectionne, setEntretienSelectionne] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,53 +46,25 @@ export default function Entretiens() {
       setLoading(true);
       setError(null);
       try {
-        // 1. Récupérer tous les entretiens
         const { data: rawEntretiens } = await getEntretiens();
 
-        // 2. Récupérer candidats + recruteurs (dédupliqués) en parallèle
-        const userIds = rawEntretiens.flatMap(e => [e.candidatId, e.recruteurId]);
-        const usersMap = await CandidatureService.getUsersByIds(userIds);
-
-        // 3. Récupérer les offres (dédupliquées) en parallèle
-        const uniqueOffreIds = [...new Set(rawEntretiens.map(e => e.offreId).filter(Boolean))];
-        const offresResults = await Promise.allSettled(
-          uniqueOffreIds.map(id => getOffreById(id).then(r => r.data))
-        );
-        const offresMap = {};
-        offresResults.forEach((res, i) => {
-          if (res.status === 'fulfilled') offresMap[uniqueOffreIds[i]] = res.value;
-        });
-
-        // 4. Construire les lignes affichées
-        const rows = rawEntretiens.map(e => {
-          const candidat = usersMap[e.candidatId];
-          const recruteur = usersMap[e.recruteurId];
-          const offre = offresMap[e.offreId];
-          const { date, heure } = splitDateHeure(e);
-
-          const fullName = (u) =>
-            u ? `${u.prenom || u.firstName || ''} ${u.nom || u.lastName || ''}`.trim() || u.email : null;
-
-          return {
-            id: e.id,
-            candidatId: e.candidatId,
-            recruteurId: e.recruteurId,
-            offreId: e.offreId,
-            candidate: candidat ? fullName(candidat) : (e.candidatId ? `Candidat #${e.candidatId}` : '-'),
-            recruiter: recruteur ? fullName(recruteur) : (e.recruteurId ? `Recruteur #${e.recruteurId}` : '-'),
-            offer: offre?.titre || offre?.title || (e.offreId ? `Offre #${e.offreId}` : '-'),
-            company: extractEntreprise(offre),
-            date,
-            heure,
-            rawDate: e.dateEntretien || e.dateHeure || e.date,
-            type: TYPE_BACKEND_TO_LABEL[e.type] || e.type || 'En ligne',
-            typeBackend: e.type,
-            status: STATUT_BACKEND_TO_LABEL[e.statut] || e.statut || 'Programmé',
-            statutBackend: e.statut,
-            lien: e.lienVisio || e.lien,
-            adresse: e.adresse || e.lieu,
-          };
-        });
+        const rows = rawEntretiens.map(e => ({
+          id: e.id,
+          candidatId: e.candidatId,
+          candidate: e.candidatNom || (e.candidatId ? `Candidat #${e.candidatId}` : '-'),
+          poste: e.poste || '-',
+          intervieweurs: Array.isArray(e.intervieweurs) && e.intervieweurs.length > 0
+            ? e.intervieweurs.join(', ')
+            : '-',
+          date: e.date || '-',
+          heure: e.heure || '-',
+          type: TYPE_BACKEND_TO_LABEL[e.type] || e.type || 'En ligne',
+          typeBackend: e.type,
+          status: STATUT_BACKEND_TO_LABEL[e.statut] || e.statut || 'Programmé',
+          statutBackend: e.statut,
+          salleId: e.salleId,
+          notes: e.notes,
+        }));
 
         if (!cancelled) setEntretiens(rows);
       } catch (err) {
@@ -141,9 +76,7 @@ export default function Entretiens() {
     }
 
     fetchData();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = useMemo(
@@ -165,22 +98,20 @@ export default function Entretiens() {
   }
 
   async function handleReprogrammer(entretien) {
-    const currentDate = entretien.rawDate ? new Date(entretien.rawDate).toISOString().slice(0, 16) : '';
-    const nouvelleDate = window.prompt(
-      'Nouvelle date et heure (AAAA-MM-JJTHH:mm) :',
-      currentDate
-    );
+    const nouvelleDate = window.prompt('Nouvelle date (AAAA-MM-JJ) :', entretien.date !== '-' ? entretien.date : '');
     if (!nouvelleDate) return;
+    const nouvelleHeure = window.prompt('Nouvelle heure (HH:mm) :', entretien.heure !== '-' ? entretien.heure : '');
+    if (!nouvelleHeure) return;
     try {
       const { data } = await modifierEntretien(entretien.id, {
-        dateEntretien: nouvelleDate,
+        date: nouvelleDate,
+        heure: nouvelleHeure,
         statut: 'PROGRAMME',
       });
-      const { date, heure } = splitDateHeure(data);
       setEntretiens(prev =>
         prev.map(e =>
           e.id === entretien.id
-            ? { ...e, date, heure, rawDate: data.dateEntretien || nouvelleDate, status: 'Programmé', statutBackend: 'PROGRAMME' }
+            ? { ...e, date: data.date || nouvelleDate, heure: data.heure || nouvelleHeure, status: 'Programmé', statutBackend: 'PROGRAMME' }
             : e
         )
       );
@@ -204,25 +135,11 @@ export default function Entretiens() {
   }
 
   function handleVoir(entretien) {
-    const lignes = [
-      `Candidat : ${entretien.candidate}`,
-      `Recruteur : ${entretien.recruiter}`,
-      `Offre : ${entretien.offer} (${entretien.company})`,
-      `Date : ${entretien.date} à ${entretien.heure}`,
-      `Type : ${entretien.type}`,
-      `Statut : ${entretien.status}`,
-      entretien.lien ? `Lien : ${entretien.lien}` : null,
-      entretien.adresse ? `Adresse : ${entretien.adresse}` : null,
-    ].filter(Boolean);
-    alert(lignes.join('\n'));
+    setEntretienSelectionne(entretien);
   }
 
   function handleModifier(entretien) {
-    // Édition rapide du type ; pour un vrai formulaire, remplace ceci par un modal dédié
-    const nouveauType = window.prompt(
-      'Type d\'entretien (ONLINE / PRESENTIEL) :',
-      entretien.typeBackend || 'ONLINE'
-    );
+    const nouveauType = window.prompt('Type d\'entretien (ONLINE / PRESENTIEL) :', entretien.typeBackend || 'ONLINE');
     if (!nouveauType) return;
     modifierEntretien(entretien.id, { type: nouveauType.toUpperCase() })
       .then(({ data }) => {
@@ -273,8 +190,8 @@ export default function Entretiens() {
               <thead>
                 <tr>
                   <th>Candidat</th>
-                  <th>Recruteur</th>
-                  <th>Offre</th>
+                  <th>Poste</th>
+                  <th>Intervieweur(s)</th>
                   <th>Date</th>
                   <th>Heure</th>
                   <th>Type</th>
@@ -286,8 +203,8 @@ export default function Entretiens() {
                 {filtered.map(e => (
                   <tr key={e.id}>
                     <td style={{ fontWeight: 600 }}>{e.candidate}</td>
-                    <td>{e.recruiter}</td>
-                    <td>{e.offer}</td>
+                    <td>{e.poste}</td>
+                    <td>{e.intervieweurs}</td>
                     <td>{e.date}</td>
                     <td>{e.heure}</td>
                     <td>
@@ -336,6 +253,65 @@ export default function Entretiens() {
           </div>
         )}
       </div>
+
+      {entretienSelectionne && (
+        <div className="rp-modal-overlay" onClick={() => setEntretienSelectionne(null)}>
+          <div className="rp-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <h3 style={{ marginBottom: 4 }}>Détails de l'entretien</h3>
+            <span className={`rp-badge rp-badge--${statusToBadge(entretienSelectionne.status)}`} style={{ marginBottom: 16, display: 'inline-block' }}>
+              {entretienSelectionne.status}
+            </span>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: 8 }}>
+                <span style={{ color: 'var(--muted)' }}>Candidat</span>
+                <strong>{entretienSelectionne.candidate}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: 8 }}>
+                <span style={{ color: 'var(--muted)' }}>Poste</span>
+                <strong>{entretienSelectionne.poste}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: 8 }}>
+                <span style={{ color: 'var(--muted)' }}>
+                  <FiUsers size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                  Intervieweur(s)
+                </span>
+                <strong>{entretienSelectionne.intervieweurs}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: 8 }}>
+                <span style={{ color: 'var(--muted)' }}>Date &amp; heure</span>
+                <strong>{entretienSelectionne.date} à {entretienSelectionne.heure}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: entretienSelectionne.salleId ? 8 : 0, borderBottom: entretienSelectionne.salleId ? '1px solid var(--border-light)' : 'none' }}>
+                <span style={{ color: 'var(--muted)' }}>Type</span>
+                <strong style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {entretienSelectionne.type === 'En ligne' ? <FiVideo size={13} /> : <FiMapPin size={13} />}
+                  {entretienSelectionne.type}
+                </strong>
+              </div>
+
+              {entretienSelectionne.salleId && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--muted)' }}>Salle</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{entretienSelectionne.salleId}</span>
+                </div>
+              )}
+              {entretienSelectionne.notes && (
+                <div>
+                  <span style={{ color: 'var(--muted)' }}>Notes</span>
+                  <p style={{ marginTop: 4 }}>{entretienSelectionne.notes}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="rp-modal__actions" style={{ marginTop: 20 }}>
+              <button type="button" className="rp-btn rp-btn--outline" onClick={() => setEntretienSelectionne(null)}>
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
