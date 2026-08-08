@@ -11,7 +11,7 @@ export default function AdminProfil() {
 
   const fullName = user ? `${user.prenom || ''} ${user.nom || ''}`.trim() : t('admin.userDefault');
   const initials = user ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase() || 'AD' : 'AD';
-  const avatarUrl = user?.avatar || user?.avatarUrl || user?.photo || user?.image || user?.profilePicture || '';
+  const avatarUrl = user?.image ? `http://localhost:8080/${user.image}` : '';
   const platformLogo = (() => {
     try {
       return localStorage.getItem('platform_logo') || null;
