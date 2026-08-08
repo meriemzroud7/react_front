@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  FiGrid, FiUser, FiFileText, FiMail, FiSearch, FiZap,
+  FiGrid, FiUser, FiFileText, FiMail, FiSearch,
   FiBriefcase, FiVideo, FiMessageSquare, FiBookmark, FiBell,
   FiSettings, FiLogOut, FiMenu, FiX, FiChevronDown,
   FiMoon, FiSun
@@ -51,7 +51,6 @@ const NAV_ITEMS = [
   { to: '/candidat/cv', icon: <FiFileText />, label: 'candidat.menu.cv' },
   { to: '/candidat/lettres', icon: <FiMail />, label: 'candidat.menu.generationCv' },
   { to: '/candidat/offres', icon: <FiSearch />, label: 'candidat.menu.jobSearch' },
-  { to: '/candidat/recommandations', icon: <FiZap />, label: 'candidat.menu.recommendations' },
   { to: '/candidat/candidatures', icon: <FiBriefcase />, label: 'candidat.menu.applications' },
   { to: '/candidat/entretiens', icon: <FiVideo />, label: 'candidat.menu.interviews' },
   { to: '/candidat/messagerie', icon: <FiMessageSquare />, label: 'candidat.menu.messaging' },
