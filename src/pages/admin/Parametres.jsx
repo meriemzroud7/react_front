@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { FiUpload, FiTrash2, FiSave, FiCheck, FiLock } from 'react-icons/fi';
-import { deleteUser } from '../../services/apiServiceUser'; // adapte le chemin vers ton fichier axios
+import { FiUpload, FiTrash2, FiSave, FiCheck, FiLock, FiCamera } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import { deleteUser, uploadUserPhoto } from '../../services/apiServiceUser';
 
 const LANGUAGES = [
   { code: 'fr', label: 'Français' },
@@ -10,11 +11,51 @@ const LANGUAGES = [
   { code: 'en', label: 'English' },
 ];
 
+function getInitials(prenom = '', nom = '') {
+  return `${prenom[0] || ''}${nom[0] || ''}`.toUpperCase() || 'AD';
+}
+
 export default function ParametresAdmin() {
   const { i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user, login } = useAuth();
   const currentLang = i18n.language?.split('-')[0] || 'fr';
 
+  // ---- Photo de profil de l'admin ----
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoSaving, setPhotoSaving] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
+  const [photoSaved, setPhotoSaved] = useState(false);
+
+  const currentAvatarUrl = user?.image ? `http://localhost:8080/${user.image}` : '';
+
+  function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  async function handleSavePhoto() {
+    if (!photoFile || !user?.id) return;
+    setPhotoSaving(true);
+    setPhotoError(null);
+    try {
+      const res = await uploadUserPhoto(user.id, photoFile);
+      login({ ...user, ...res.data }); // rafraîchit l'avatar affiché dans la sidebar/topbar
+      setPhotoFile(null);
+      setPhotoSaved(true);
+      setTimeout(() => setPhotoSaved(false), 2500);
+    } catch (err) {
+      console.error(err);
+      setPhotoError("Échec de l'envoi de la photo.");
+    } finally {
+      setPhotoSaving(false);
+    }
+  }
+
+  // ---- Plateforme (logo, nom, langue) ----
   const [platformName, setPlatformName] = useState('Fursa — فرصة');
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(() => {
@@ -46,7 +87,6 @@ export default function ParametresAdmin() {
     if (file) setLogoFile(file);
   };
 
-  // build preview when user selects a file
   React.useEffect(() => {
     if (!logoFile) return;
     const reader = new FileReader();
@@ -60,16 +100,7 @@ export default function ParametresAdmin() {
     setSaveError(null);
     setSaved(false);
     try {
-      // TODO: brancher sur le vrai endpoint quand il existera, ex :
-      // const formData = new FormData();
-      // formData.append('platformName', platformName);
-      // formData.append('language', currentLang);
-      // if (logoFile) formData.append('logo', logoFile);
-      // await axios.put('http://localhost:8080/api/parametres', formData);
-
-      // simulate network delay
       await new Promise((res) => setTimeout(res, 600));
-      // persist platform settings locally for now
       try {
         localStorage.setItem('platform_name', platformName);
         localStorage.setItem('platform_lang', currentLang);
@@ -108,6 +139,58 @@ export default function ParametresAdmin() {
       <div className="rp-header">
         <h1 className="rp-title">Paramètres de la Plateforme</h1>
         <p className="rp-subtitle">Configuration générale</p>
+      </div>
+
+      {/* Photo de profil de l'admin */}
+      <div className="rp-card">
+        <div className="rp-card__header">
+          <span className="rp-card__title">Photo de profil</span>
+        </div>
+        <div className="rp-card__body" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ position: 'relative', width: 72, height: 72 }}>
+            {photoPreview || currentAvatarUrl ? (
+              <img
+                src={photoPreview || currentAvatarUrl}
+                alt="avatar"
+                style={{ width: 72, height: 72, borderRadius: '50%', objectFit: 'cover' }}
+              />
+            ) : (
+              <div
+                className="rp-avatar"
+                style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}
+              >
+                {getInitials(user?.prenom, user?.nom)}
+              </div>
+            )}
+            <label
+              style={{
+                position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: '50%',
+                background: 'var(--accent)', border: 'none', cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: '#fff',
+              }}
+            >
+              <FiCamera size={13} />
+              <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
+            </label>
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700 }}>{user?.prenom} {user?.nom}</div>
+            <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>{user?.email}</div>
+          </div>
+
+          {photoFile && (
+            <button
+              type="button"
+              className="rp-btn rp-btn--primary"
+              onClick={handleSavePhoto}
+              disabled={photoSaving}
+            >
+              {photoSaving ? 'Envoi...' : photoSaved ? <><FiCheck /> Enregistrée</> : <><FiSave /> Enregistrer la photo</>}
+            </button>
+          )}
+        </div>
+        {photoError && <p className="rp-error-text" style={{ padding: '0 1rem 1rem' }}>{photoError}</p>}
       </div>
 
       {/* Général */}
