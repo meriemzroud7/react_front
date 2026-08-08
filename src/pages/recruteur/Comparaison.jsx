@@ -96,21 +96,19 @@ export default function Comparaison() {
         const candidatures = await CandidatureService.getByOffre(selectedOffreId);
         const usersMap = await CandidatureService.getUsersByIds(candidatures.map((c) => c.candidatId));
 
-        const enriched = [];
-        for (const cand of candidatures) {
-          let matchScore = null;
-          try {
-            const res = await getMatchScore(cand.candidatId, selectedOffreId);
-            matchScore = res.data?.matchScore ?? null;
-          } catch (err) {
-            console.error('Échec du calcul de score pour', cand.candidatId, err);
-          }
-          const candidatUser = usersMap[cand.candidatId];
-          enriched.push({
-            id: cand.id || cand._id,
-            candidature: cand,
-            candidatUser,
-            name: getUserDisplayName(candidatUser),
+        const resultatsScores = await Promise.allSettled(
+  candidatures.map((cand) => getMatchScore(cand.candidatId, selectedOffreId))
+);
+
+const enriched = candidatures.map((cand, i) => {
+  const res = resultatsScores[i];
+  const matchScore = res.status === 'fulfilled' ? (res.value.data?.matchScore ?? null) : null;
+  const candidatUser = usersMap[cand.candidatId];
+  return {
+    id: cand.id || cand._id,
+    candidature: cand,
+    candidatUser,
+    name: getUserDisplayName(candidatUser),
             avatar: getInitials(getUserDisplayName(candidatUser)),
             color: getAvatarColor(getUserDisplayName(candidatUser)),
             statut: cand[STATUT_FIELD] || 'En attente',
@@ -122,8 +120,8 @@ export default function Comparaison() {
             hard: candidatUser?.[CANDIDAT_FIELDS.hardSkills] || 'Non renseignés',
             dispo: candidatUser?.[CANDIDAT_FIELDS.disponibilite] || 'Non renseignée',
             salaire: candidatUser?.[CANDIDAT_FIELDS.salaire] || 'Non renseigné',
-          });
-        }
+          };
+        });
 
         enriched.sort((a, b) => (b.score ?? -1) - (a.score ?? -1));
         setAllCandidats(enriched);
