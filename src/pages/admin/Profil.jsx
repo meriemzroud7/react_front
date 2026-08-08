@@ -63,8 +63,7 @@ export default function AdminProfil() {
         <hr style={{ margin: '1.25rem 0', border: 'none', borderTop: '1px solid var(--border-light)' }} />
 
         <div>
-          <h3 style={{ marginBottom: 8 }}>{t('admin.profile')}</h3>
-          <div style={{ color: 'var(--muted)' }}>
+<h3 style={{ marginBottom: 8 }}>{t('admin.menu.profil')}</h3>          <div style={{ color: 'var(--muted)' }}>
             {/* Afficher plus d'infos si disponibles */}
             <p>{t('admin.userDefault')}: {fullName}</p>
             <p>Email: {user?.email || '—'}</p>
