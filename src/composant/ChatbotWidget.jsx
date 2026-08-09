@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { FiX, FiSend } from 'react-icons/fi';
 import { RiRobot2Line } from 'react-icons/ri';
+import { envoyerMessageChatbotIA } from '../services/apiServiceChatbotIA';
 import '../styles/chatbot.css';
 
 export default function ChatbotWidget() {
@@ -16,22 +17,25 @@ export default function ChatbotWidget() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, isOpen]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
-    setMessages((prev) => [...prev, { text: input, isBot: false }]);
+    const messageEnvoye = input;
+    setMessages((prev) => [...prev, { text: messageEnvoye, isBot: false }]);
     setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      setIsTyping(false);
+    try {
+      const { data } = await envoyerMessageChatbotIA(messageEnvoye);
+      setMessages((prev) => [...prev, { text: data.reponse, isBot: true }]);
+    } catch (err) {
+      console.error('Erreur chatbot IA :', err);
       setMessages((prev) => [
         ...prev,
-        {
-          text: 'Excellente initiative ! Je peux analyser votre CV pour cibler les offres correspondantes ou vous préparer à un entretien technique. Que préférez-vous ?',
-          isBot: true,
-        },
+        { text: "Désolé, je rencontre un souci technique. Réessayez dans un instant.", isBot: true },
       ]);
-    }, 1200);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
