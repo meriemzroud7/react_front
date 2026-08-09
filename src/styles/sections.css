@@ -540,24 +540,26 @@
 }
 .hero__floating--top { top: 0.5rem; right: -1rem; }
 
-
 .hero__floating {
   position: absolute;
   display: none;
   align-items: center;
   gap: 0.6rem;
-  max-width: 220px;
+  width: 220px;
   background: var(--card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.9rem;
   animation: floatY 3s ease-in-out infinite;
+  z-index: 2;
 }
-.hero__floating--top { top: 0.5rem; right: -1rem; }
-.hero__floating--bottom { bottom: 1rem; left: -1.5rem; animation-duration: 4s; }
+.hero__floating--top { top: -2rem; right: -2rem; }
+.hero__floating--bottom { bottom: -1.5rem; left: -2rem; animation-duration: 4s; }
 .hero__floating-name,
-.hero__floating-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero__floating-sub { white-space: normal; line-height: 1.3; }
+.hero__floating-avatar { flex-shrink: 0; }
+.hero__floating--bottom { bottom: -3rem; left: -2rem; animation-duration: 4s; }
 @media (min-width: 500px) {
   .hero__floating { display: flex; }
 }
