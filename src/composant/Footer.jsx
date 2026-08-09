@@ -7,9 +7,12 @@ export default function Footer() {
         <div className="footer__grid">
           <div className="footer__brand">
             <div className="footer__brand-row">
-              <div className="footer__brand-icon">ف</div>
-              <span className="footer__brand-name">Fursa</span>
-            </div>
+            <img
+          src="/logof.png"
+            alt="Fursa Logo"
+         className="footer__brand-icon" />
+  <span className="footer__brand-name">Fursa</span>
+</div>
             <p className="footer__text">
               La première plateforme de recrutement propulsée par l'IA conçue pour le marché tunisien.
             </p>
