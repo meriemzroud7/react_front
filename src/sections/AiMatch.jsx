@@ -58,10 +58,7 @@ export default function AiMatch() {
             </div>
           </div>
 
-          <div className="ai-match__aside">
-            <span className="ai-match__aside-num">03</span>
-            <span>Le signal compte autant que le mot-clé.</span>
-          </div>
+         
         </div>
 
         <div className="ai-match__panel fade-in-up">
