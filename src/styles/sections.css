@@ -558,3 +558,6 @@
 .hero__floating--bottom { bottom: 1rem; left: -1.5rem; animation-duration: 4s; }
 .hero__floating-name,
 .hero__floating-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 500px) {
+  .hero__floating { display: flex; }
+}
