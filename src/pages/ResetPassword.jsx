@@ -91,7 +91,7 @@ export default function ResetPassword() {
 
         <div className="fursa-left-content">
           <div className="fursa-logo">
-            <span className="fursa-logo-badge">ف</span>
+            <img src="/logof.png" alt="Fursa" className="fursa-logo-badge" />
             <span className="fursa-logo-text">فرصة Fursa</span>
           </div>
 
@@ -124,11 +124,6 @@ export default function ResetPassword() {
               <span className="fursa-stat-label">Entreprises</span>
             </div>
           </div>
-
-          <p className="fursa-quote">
-            "Fursa m'a trouvé un poste chez Vermeg en 2 semaines." — Yasmine
-            B., Ingénieure
-          </p>
         </div>
       </div>
 
