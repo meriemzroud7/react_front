@@ -4,6 +4,7 @@ import ChatbotWidget from '../composant/ChatbotWidget';
 import Hero from '../sections/Hero';
 import Stats from '../sections/Stats';
 import Features from '../sections/Features';
+import AiMatch from '../sections/AiMatch';
 import HowItWorks from '../sections/HowItWorks';
 import JobListings from '../sections/JobListings';
 import OpportunitiesMap from '../sections/OpportunitiesMap';
@@ -19,6 +20,7 @@ export default function Home() {
         <Hero />
         <Stats />
         <Features />
+         <AiMatch />
         <HowItWorks />
         <JobListings />
         <OpportunitiesMap />
