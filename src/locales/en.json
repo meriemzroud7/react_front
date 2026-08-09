@@ -257,7 +257,28 @@
       "activitiesTitle": "Recent activity",
       "noActivities": "No recent activity."
     }
-  }, "cvUpdated": "Just updated",
-"profileAttention": "Your profile is getting attention",
-"newOpportunities": "12 new opportunities"
+    },
+  "aiFeatures": {
+    "eyebrow": "Fursa AI",
+    "title": "Artificial intelligence at the service of recruitment",
+    "description": "From reading the CV to interview preparation, every step is AI-assisted for faster, fairer hiring.",
+    "items": {
+      "cvAnalysis": {
+        "title": "AI CV analysis",
+        "text": "Our engine reads every CV in depth, detects real skills, and highlights the projects and experience that make the difference — not just keywords."
+      },
+      "matching": {
+        "title": "Smart matching",
+        "text": "Every candidate is matched with the most relevant offers, and every recruiter receives a list of profiles already ranked by relevance for the role."
+      },
+      "interview": {
+        "title": "Interview simulator",
+        "text": "The Fursa chatbot prepares candidates with technical questions tailored to the target role, so they arrive at the interview more confident and better prepared."
+      },
+      "analytics": {
+        "title": "HR analytics",
+        "text": "Recruiters track their hiring timelines, application quality, and the performance of each published offer in real time."
+      }
+    }
+  }
 }

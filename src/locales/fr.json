@@ -258,4 +258,27 @@
       "noActivities": "Aucune activité récente."
     }
   }
+  ,"aiFeatures": {
+  "eyebrow": "Fursa AI",
+  "title": "L'intelligence artificielle au service du recrutement",
+  "description": "De la lecture du CV à la préparation de l'entretien, chaque étape est assistée par l'IA pour un recrutement plus rapide et plus juste.",
+  "items": {
+    "cvAnalysis": {
+      "title": "Analyse de CV par IA",
+      "text": "Notre moteur lit chaque CV en profondeur, détecte les compétences réelles et met en valeur les projets et expériences qui font la différence — pas seulement les mots-clés."
+    },
+    "matching": {
+      "title": "Matching intelligent",
+      "text": "Chaque candidat est rapproché des offres les plus pertinentes, et chaque recruteur reçoit une liste de profils déjà classés par pertinence pour son poste."
+    },
+    "interview": {
+      "title": "Simulateur d'entretien",
+      "text": "Le chatbot Fursa prépare les candidats avec des questions techniques adaptées à l'offre visée, pour arriver en entretien plus confiant et mieux préparé."
+    },
+    "analytics": {
+      "title": "Analytics RH",
+      "text": "Les recruteurs suivent en temps réel leurs délais de recrutement, la qualité des candidatures et la performance de chaque offre publiée."
+    }
+  }
+}
 }
