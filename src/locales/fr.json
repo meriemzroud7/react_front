@@ -10,21 +10,22 @@
     "login": "Connexion",
     "register": "Créer un compte"
   },
-  "hero": {
-    "title": "L'IA au service de votre",
-    "highlight": "carrière en Tunisie",
-    "description": "Fursa combine l'intelligence artificielle et une compréhension profonde du marché local pour matcher les talents tunisiens avec les meilleures opportunités.",
-    "uploadCv": "Déposer mon CV",
-    "hire": "Je recrute",
-    "cvAnalysisTitle": "Analyse CV en cours",
-    "aiActive": "IA Active",
-    "skillExtraction": "Extraction des compétences...",
-    "detectedSkills": "React, Node.js, TypeScript détectés",
-    "experience": "3 ans d'expérience (Sfax, Tunisie)",
-    "matchScoreLabel": "Score de match ciblé",
-    "jobSearch": "Cherche Dev React",
-    "matchFound": "Match trouvé !"
-  },
+"hero": {
+  "title": "L'IA au service de votre",
+  "highlight": "carrière en Tunisie",
+  "description": "Fursa combine l'intelligence artificielle et une compréhension profonde du marché local pour matcher les talents tunisiens avec les meilleures opportunités.",
+  "uploadCv": "Déposer mon CV",
+  "hire": "Je recrute",
+  "cvAnalysisTitle": "Analyse CV en cours",
+  "aiActive": "IA Active",
+  "skillExtraction": "Extraction des compétences...",
+  "detectedSkills": "React, Node.js, TypeScript détectés",
+  "experience": "3 ans d'expérience (Sfax, Tunisie)",
+  "matchScoreLabel": "Score de match ciblé",
+  "cvUpdated": "Mis à jour à l'instant",
+  "profileAttention": "Votre profil attire l'attention",
+  "newOpportunities": "12 nouvelles opportunités"
+},
   "features": {
     "titlePart1": "L'intelligence artificielle,",
     "titlePart2": "votre atout recrutement",

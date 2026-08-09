@@ -1,4 +1,4 @@
-import { FiUpload, FiBriefcase, FiFileText, FiCheckCircle } from 'react-icons/fi';
+import { FiUpload, FiBriefcase, FiFileText, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
 export default function Hero() {
@@ -37,13 +37,16 @@ export default function Hero() {
         </div>
 
         <div className="hero__panel fade-in-up">
-          <div className="hero__card">
+          <div className="hero__blob hero__blob--1" />
+          <div className="hero__blob hero__blob--2" />
+
+          <div className="hero__card hero__card--3d">
             <div className="hero__card-header">
               <div className="hero__card-title">
                 <div className="hero__card-icon"><FiFileText size={18} /></div>
                 <div>
                   <h3>{t('hero.cvAnalysisTitle')}</h3>
-                  <p>ahmed_cv_2024.pdf</p>
+                  <p>{t('hero.cvUpdated')}</p>
                 </div>
               </div>
               <span className="hero__card-badge">{t('hero.aiActive')}</span>
@@ -70,18 +73,20 @@ export default function Hero() {
           </div>
 
           <div className="hero__floating hero__floating--top">
-            <div className="hero__floating-avatar hero__floating-avatar--blue">V</div>
+            <div className="hero__floating-avatar hero__floating-avatar--blue">
+              <FiTrendingUp size={16} />
+            </div>
             <div>
-              <p className="hero__floating-name">Vermeg</p>
-              <p className="hero__floating-sub">{t('hero.jobSearch')}</p>
+              <p className="hero__floating-name">{t('hero.profileAttention')}</p>
             </div>
           </div>
 
           <div className="hero__floating hero__floating--bottom">
-            <div className="hero__floating-avatar hero__floating-avatar--gold">T</div>
+            <div className="hero__floating-avatar hero__floating-avatar--gold">
+              <FiTrendingUp size={16} />
+            </div>
             <div>
-              <p className="hero__floating-name">Telnet</p>
-              <p className="hero__floating-sub">{t('hero.matchFound')}</p>
+              <p className="hero__floating-name">{t('hero.newOpportunities')}</p>
             </div>
           </div>
         </div>

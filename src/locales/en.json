@@ -11,20 +11,21 @@
     "register": "Create account"
   },
   "hero": {
-    "title": "AI at the service of your",
-    "highlight": "career in Tunisia",
-    "description": "Fursa combines artificial intelligence and a deep understanding of the local market to connect Tunisian talent with the best opportunities.",
-    "uploadCv": "Upload my CV",
-    "hire": "I recruit",
-    "cvAnalysisTitle": "CV analysis in progress",
-    "aiActive": "AI Active",
-    "skillExtraction": "Extracting skills...",
-    "detectedSkills": "React, Node.js, TypeScript detected",
-    "experience": "3 years of experience (Sfax, Tunisia)",
-    "matchScoreLabel": "Target match score",
-    "jobSearch": "Looking for a React Dev",
-    "matchFound": "Match found!"
-  },
+  "title": "AI at the service of your",
+  "highlight": "career in Tunisia",
+  "description": "Fursa combines artificial intelligence and a deep understanding of the local market to connect Tunisian talent with the best opportunities.",
+  "uploadCv": "Upload my CV",
+  "hire": "I recruit",
+  "cvAnalysisTitle": "CV analysis in progress",
+  "aiActive": "AI Active",
+  "skillExtraction": "Extracting skills...",
+  "detectedSkills": "React, Node.js, TypeScript detected",
+  "experience": "3 years of experience (Sfax, Tunisia)",
+  "matchScoreLabel": "Target match score",
+  "cvUpdated": "Just updated",
+  "profileAttention": "Your profile is getting attention",
+  "newOpportunities": "12 new opportunities"
+},
   "features": {
     "titlePart1": "Artificial intelligence,",
     "titlePart2": "your recruitment advantage",
@@ -256,5 +257,7 @@
       "activitiesTitle": "Recent activity",
       "noActivities": "No recent activity."
     }
-  }
+  }, "cvUpdated": "Just updated",
+"profileAttention": "Your profile is getting attention",
+"newOpportunities": "12 new opportunities"
 }

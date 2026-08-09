@@ -11,20 +11,21 @@
     "register": "إنشاء حساب"
   },
   "hero": {
-    "title": "الذكاء الاصطناعي في خدمة",
-    "highlight": "مسيرتك في تونس",
-    "description": "تجمع فورصة بين الذكاء الاصطناعي وفهم عميق للسوق المحلي لربط الكفاءات التونسية بأفضل الفرص.",
-    "uploadCv": "إرسال سيرتي الذاتية",
-    "hire": "أنا أوظف",
-    "cvAnalysisTitle": "تحليل السيرة الذاتية قيد التنفيذ",
-    "aiActive": "الذكاء الاصطناعي نشط",
-    "skillExtraction": "جاري استخراج المهارات...",
-    "detectedSkills": "تم اكتشاف React و Node.js و TypeScript",
-    "experience": "3 سنوات من الخبرة (صفاقس، تونس)",
-    "matchScoreLabel": "درجة التطابق المستهدفة",
-    "jobSearch": "أبحث عن مطور React",
-    "matchFound": "تم العثور على تطابق!"
-  },
+  "title": "الذكاء الاصطناعي في خدمة",
+  "highlight": "مسيرتك في تونس",
+  "description": "تجمع فورصة بين الذكاء الاصطناعي وفهم عميق للسوق المحلي لربط الكفاءات التونسية بأفضل الفرص.",
+  "uploadCv": "إرسال سيرتي الذاتية",
+  "hire": "أنا أوظف",
+  "cvAnalysisTitle": "تحليل السيرة الذاتية قيد التنفيذ",
+  "aiActive": "الذكاء الاصطناعي نشط",
+  "skillExtraction": "جاري استخراج المهارات...",
+  "detectedSkills": "تم اكتشاف React و Node.js و TypeScript",
+  "experience": "3 سنوات من الخبرة (صفاقس، تونس)",
+  "matchScoreLabel": "درجة التطابق المستهدفة",
+  "cvUpdated": "تم التحديث للتو",
+  "profileAttention": "ملفك الشخصي يلفت الانتباه",
+  "newOpportunities": "12 فرصة جديدة"
+},
   "features": {
     "titlePart1": "الذكاء الاصطناعي،",
     "titlePart2": "مميزتك في التوظيف",
@@ -257,4 +258,8 @@
       "noActivities": "لا توجد أنشطة حديثة."
     }
   }
+  ,
+  "cvUpdated": "تم التحديث للتو",
+"profileAttention": "ملفك الشخصي يلفت الانتباه",
+"newOpportunities": "12 فرصة جديدة"
 }
