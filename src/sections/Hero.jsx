@@ -1,4 +1,4 @@
-import { FiUpload, FiBriefcase, FiFileText, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
+import { FiFileText, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
 
 export default function Hero() {
@@ -25,15 +25,6 @@ export default function Hero() {
           <p className="hero__text">
             {t('hero.description')}
           </p>
-
-          <div className="hero__actions">
-            <button className="btn btn--primary">
-              <FiUpload size={20} /> {t('hero.uploadCv')}
-            </button>
-            <button className="btn btn--outline">
-              <FiBriefcase size={20} /> {t('hero.hire')}
-            </button>
-          </div>
         </div>
 
         <div className="hero__panel fade-in-up">
