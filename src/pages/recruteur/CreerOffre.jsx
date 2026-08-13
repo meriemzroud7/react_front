@@ -75,7 +75,7 @@ export default function CreerOffre() {
     ].join('');
 
     const competencesRequises = [
-      ...form.competences.split(',').map(c => c.trim()).filter(Boolean),
+      ...form.competences.split(/[,;\n]+/).map(c => c.trim()).filter(Boolean),
       ...form.obligatoires.filter(Boolean),
       ...form.souhaitees.filter(Boolean),
     ];
